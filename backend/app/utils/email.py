@@ -1,6 +1,5 @@
 import os
 import smtplib
-import imaplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
@@ -13,13 +12,10 @@ from app.utils.security import decrypt_password
 
 load_dotenv()
 
-# Hostinger SMTP Settings
-HOSTINGER_SMTP_SERVER = "smtp.hostinger.com"
-HOSTINGER_SMTP_PORT = 465  # SSL port
-
-# Hostinger IMAP Settings (for saving to Sent folder)
-HOSTINGER_IMAP_SERVER = "imap.hostinger.com"
-HOSTINGER_IMAP_PORT = 993  # SSL port
+# Gmail SMTP Settings
+GMAIL_SMTP_SERVER = os.getenv("GMAIL_SMTP_SERVER", "smtp.gmail.com")
+GMAIL_SMTP_PORT = int(os.getenv("GMAIL_SMTP_PORT", "587"))  # TLS port (587) or SSL (465)
+# Note: Gmail uses email address as username and app password as password
 
 def get_default_email_account(db: Session = None) -> EmailAccount:
     """Get the default email account from database"""
@@ -55,75 +51,22 @@ def get_email_account_by_id(account_id: int, db: Session = None) -> EmailAccount
             db.close()
 
 def save_to_sent_folder(from_email: str, from_password: str, msg: Message):
-    """Save email copy to Sent folder using IMAP"""
-    try:
-        # Connect to IMAP server
-        mail = imaplib.IMAP4_SSL(HOSTINGER_IMAP_SERVER, HOSTINGER_IMAP_PORT)
-        mail.login(from_email, from_password)
-        
-        # Select Sent folder (try common names)
-        sent_folders = ["Sent", "Sent Items", "INBOX.Sent"]
-        sent_folder = None
-        
-        for folder in sent_folders:
-            try:
-                status, _ = mail.select(folder)
-                if status == "OK":
-                    sent_folder = folder
-                    break
-            except:
-                continue
-        
-        # If no standard Sent folder found, try to list and find it
-        if not sent_folder:
-            try:
-                status, folders = mail.list()
-                if status == "OK":
-                    for folder_info in folders:
-                        folder_str = folder_info.decode()
-                        # Parse folder name from IMAP LIST response
-                        parts = folder_str.split(' "/" ')
-                        if len(parts) > 1:
-                            folder_name = parts[-1].strip('"')
-                        else:
-                            # Alternative parsing
-                            folder_name = folder_str.split('"')[-2] if '"' in folder_str else None
-                        
-                        if folder_name and 'sent' in folder_name.lower():
-                            try:
-                                status, _ = mail.select(folder_name)
-                                if status == "OK":
-                                    sent_folder = folder_name
-                                    break
-                            except:
-                                continue
-            except Exception as e:
-                print(f"⚠️ Error listing folders: {e}")
-                pass
-        
-        if sent_folder:
-            # Convert message to string and append to Sent folder
-            msg_str = msg.as_string()
-            mail.append(sent_folder, None, None, msg_str.encode('utf-8'))
-            print(f"✅ Email saved to Sent folder: {sent_folder}")
-        else:
-            print("⚠️ Could not find Sent folder, email not saved to Sent (but was sent successfully)")
-        
-        mail.logout()
-    except Exception as e:
-        # Don't fail the whole operation if saving to Sent fails
-        print(f"⚠️ Could not save email to Sent folder: {e} (email was sent successfully)")
+    """Save email copy to Sent folder using IMAP (Optional - Gmail supports IMAP)"""
+    # Note: Gmail supports IMAP for saving to Sent folder
+    # For now, we'll skip this as it requires additional IMAP configuration
+    # Emails sent via Gmail SMTP are tracked in Gmail's Sent folder automatically
+    print(f"ℹ️ Email sent successfully via Gmail SMTP. It will appear in Gmail's Sent folder.")
 
-def send_email_with_hostinger(
+def send_email_with_gmail(
     from_email: str,
-    from_password: str,
+    app_password: str,
     to_email: str,
     subject: str,
     body: str,
     attachment_path: str = None,
     save_to_sent: bool = True
 ):
-    """Send email using Hostinger SMTP and optionally save to Sent folder"""
+    """Send email using Gmail SMTP with app password"""
     try:
         # Create multipart email
         msg = MIMEMultipart()
@@ -144,24 +87,33 @@ def send_email_with_hostinger(
             except Exception as e:
                 print(f"⚠️ Could not attach file {attachment_path}: {e}")
 
-        # Send email using Hostinger SMTP
-        with smtplib.SMTP_SSL(HOSTINGER_SMTP_SERVER, HOSTINGER_SMTP_PORT) as server:
-            server.login(from_email, from_password)
-            server.send_message(msg)
+        # Send email using Gmail SMTP
+        # Gmail uses TLS on port 587 or SSL on port 465
+        if GMAIL_SMTP_PORT == 465:
+            # SSL connection
+            with smtplib.SMTP_SSL(GMAIL_SMTP_SERVER, GMAIL_SMTP_PORT) as server:
+                server.login(from_email, app_password)  # Gmail uses email as username
+                server.send_message(msg)
+        else:
+            # TLS connection (default for port 587)
+            with smtplib.SMTP(GMAIL_SMTP_SERVER, GMAIL_SMTP_PORT) as server:
+                server.starttls()  # Enable TLS
+                server.login(from_email, app_password)  # Gmail uses email as username
+                server.send_message(msg)
         
-        print(f"✅ Email sent to {to_email} from {from_email} via Hostinger")
+        print(f"✅ Email sent to {to_email} from {from_email} via Gmail SMTP")
         
-        # Save to Sent folder if requested
+        # Save to Sent folder if requested (Gmail automatically saves to Sent folder)
         if save_to_sent:
-            save_to_sent_folder(from_email, from_password, msg)
+            save_to_sent_folder(from_email, app_password, msg)
         
         return True
     except Exception as e:
-        print(f"❌ Hostinger SMTP error: {e}")
+        print(f"❌ Gmail SMTP error: {e}")
         raise
 
 def send_onboarding_email(hr_email: str, hr_name: str, to_email: str, employee_name: str, link: str, nda_path: str, email_account_id: int = None):
-    """Send onboarding email using Hostinger and database email account"""
+    """Send onboarding email using Gmail SMTP and database email account"""
     subject = "Welcome to Sumeru Digitals — Start Your Onboarding"
     body = f"""
     <p>Hi {employee_name},</p>
@@ -184,18 +136,18 @@ def send_onboarding_email(hr_email: str, hr_name: str, to_email: str, employee_n
         if not account:
             raise ValueError("No email account configured. Please add an email account in HR Dashboard.")
         
-        # Decrypt password for email sending
+        # Decrypt app password (stored as password in database) for email sending
         try:
-            decrypted_password = decrypt_password(account.password)
+            app_password = decrypt_password(account.password)
         except Exception as e:
-            error_msg = f"Could not decrypt email account password: {str(e)}"
+            error_msg = f"Could not decrypt Gmail app password: {str(e)}"
             print(f"❌ {error_msg}")
             raise ValueError(error_msg)
         
-        # Send email using Hostinger
-        send_email_with_hostinger(
+        # Send email using Gmail SMTP
+        send_email_with_gmail(
             from_email=account.email,
-            from_password=decrypted_password,
+            app_password=app_password,
             to_email=to_email,
             subject=subject,
             body=body,
@@ -216,7 +168,6 @@ def send_email_credentials(
     body = f"""
     <p>Hi {employee_name},</p>
     <p>Your company email account has been set up. Here are your credentials:</p>
-    <p><strong>url -</strong> <a href="https://mail.hostinger.com/">https://mail.hostinger.com/</a></p>
     <p><strong>Email:</strong> {company_email}</p>
     <p><strong>Password:</strong> {company_password}</p>
     <p><strong>Important:</strong> Please change your password after your first login for security.</p>
@@ -235,18 +186,18 @@ def send_email_credentials(
         if not account:
             raise ValueError("No email account configured. Please add an email account in HR Dashboard.")
         
-        # Decrypt password for email sending
+        # Decrypt app password (stored as password in database) for email sending
         try:
-            decrypted_password = decrypt_password(account.password)
+            app_password = decrypt_password(account.password)
         except Exception as e:
-            error_msg = f"Could not decrypt email account password: {str(e)}"
+            error_msg = f"Could not decrypt Gmail app password: {str(e)}"
             print(f"❌ {error_msg}")
             raise ValueError(error_msg)
         
-        # Send email using Hostinger
-        send_email_with_hostinger(
+        # Send email using Gmail SMTP
+        send_email_with_gmail(
             from_email=account.email,
-            from_password=decrypted_password,
+            app_password=app_password,
             to_email=to_email,
             subject=subject,
             body=body

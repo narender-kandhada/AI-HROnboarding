@@ -262,12 +262,12 @@ def test_email_account(
         )
     
     # Send test email
-    from app.utils.email import send_email_with_hostinger
+    from app.utils.email import send_email_with_gmail
     
     try:
-        send_email_with_hostinger(
+        send_email_with_gmail(
             from_email=account.email,
-            from_password=decrypted_password,
+            app_password=decrypted_password,  # App password is stored as password
             to_email=test_email,
             subject="Test Email from Sumeru Digitals",
             body=f"<p>This is a test email from {account.email}.</p><p>If you received this, the email configuration is working correctly!</p>"
