@@ -1,0 +1,71 @@
+.preonboarding-page {
+    min-height: 100vh;
+    padding: 60px 40px;
+    background: linear-gradient(to bottom right, #DBEAFE, #93C5FD);
+    font-family: 'Segoe UI', sans-serif;
+  }
+  h1 {
+    font-size: 36px;
+    color: #1D4ED8;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  p {
+    font-size: 18px;
+    color: #374151;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  form {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(6px);
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: none;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1F2937;
+  }
+  input, select {
+    padding: 10px 14px;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+  }
+  input:focus, select:focus {
+    border-color: #3B82F6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+  .form-actions {
+    text-align: right;
+    margin-top: 30px;
+  }
+  button {
+    background-color: #2563EB;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  }

@@ -1,0 +1,77 @@
+SumeruDigitals Software Pvt. Ltd. — Company Policy Handbook
+
+1. Introduction
+Welcome to SumeruDigitals! This handbook outlines the policies, procedures, and expectations that guide our workplace culture, operations, and employee responsibilities. It is designed to ensure clarity, consistency, and compliance across all teams.
+
+2. Code of Conduct
+- Treat all colleagues, clients, and partners with respect and professionalism.
+- Maintain integrity, honesty, and transparency in all interactions.
+- Avoid conflicts of interest and report any ethical concerns to HR.
+
+3. Work Hours & Attendance
+- Standard hours: 9:30 AM to 6:30 PM IST, Monday to Friday.
+- Flexible hours and remote work are allowed with manager approval.
+- Attendance must be logged via the HR portal; habitual tardiness may affect performance reviews.
+
+4. Leave Policy
+- Annual leave entitlement: 24 days (including casual, sick, and earned leave).
+- All leave requests must be submitted at least 2 days in advance.
+- Emergency leave should be communicated to your manager as soon as possible.
+
+5. IT Usage & Security
+- Use company devices and networks responsibly.
+- Do not install unauthorized software or share credentials.
+- All code must be committed to approved repositories with proper access control.
+- Report any security breaches or suspicious activity immediately.
+
+6. Confidentiality & Intellectual Property
+- All internal documents, source code, and client data are confidential.
+- Employees must sign a Non-Disclosure Agreement (NDA) upon joining.
+- Intellectual property developed during employment belongs to the company unless otherwise agreed.
+
+7. Harassment & Grievance Redressal
+- SumeruDigitals maintains a zero-tolerance policy for harassment of any kind.
+- Employees can report grievances confidentially via hr@SumeruDigitals.com or the HR portal.
+- All complaints will be investigated promptly and fairly.
+
+8. Compensation & Benefits
+- Salary is credited on the last working day of each month.
+- Benefits include:
+- Health insurance coverage
+- Wellness reimbursements
+- Learning & development stipends
+- Referral bonuses
+
+9. Performance & Appraisal
+- Appraisals are conducted bi-annually.
+- Evaluation criteria include:
+- Technical delivery
+- Collaboration & communication
+- Initiative & ownership
+- Feedback is shared transparently, and growth plans are co-created with managers.
+
+10. Remote Work & Hybrid Guidelines
+- Employees may work remotely up to 3 days per week unless project needs require otherwise.
+- All remote employees must be reachable during core hours and attend virtual stand-ups.
+- VPN access and secure login protocols are mandatory.
+
+11. Travel & Expense Reimbursement
+- Business travel must be pre-approved by your manager.
+- Expenses must be submitted within 7 days of travel with valid receipts.
+- Reimbursement is processed within 10 working days.
+
+12. Exit & Transition
+- Resignation requires a minimum 30-day notice.
+- All company assets must be returned before the last working day.
+- Final settlement and experience letter are issued within 15 working days post-exit.
+
+13. Policy Updates
+- This document is reviewed annually.
+- Employees will be notified of any changes via email and the HR portal.
+- Continued employment implies acceptance of updated policies.
+
+Acknowledgment
+By accepting this policy, you confirm that you have read, understood, and agreed to abide by the guidelines outlined above.
+For questions or clarifications, please contact hr@SumeruDigitals.com.
+
+

@@ -1,0 +1,4 @@
+Confidentiality & Intellectual Property
+- All internal documents, source code, and client data are confidential.
+- Employees must sign a Non-Disclosure Agreement (NDA) upon joining.
+- Intellectual property developed during employment belongs to the company unless otherwise agreed.

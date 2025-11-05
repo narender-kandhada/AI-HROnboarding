@@ -1,0 +1,4 @@
+Remote Work & Hybrid Guidelines
+- Employees may work remotely up to 3 days per week unless project needs require otherwise.
+- All remote employees must be reachable during core hours and attend virtual stand-ups.
+- VPN access and secure login protocols are mandatory.

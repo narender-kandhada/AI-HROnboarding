@@ -1,0 +1,90 @@
+[
+    {
+      "question": "What do I need to complete for onboarding?",
+      "tag": "onboarding_tasks"
+    },
+    {
+      "question": "Where can I upload my documents?",
+      "tag": "document_upload"
+    },
+    {
+      "question": "How do I know if my onboarding is complete?",
+      "tag": "onboarding_status"
+    },
+    {
+      "question": "When will I get access to company tools?",
+      "tag": "tool_access_timeline"
+    },
+    {
+      "question": "Who can I contact if something’s missing?",
+      "tag": "onboarding_support"
+    },
+    {
+      "question": "How do I log in to the portal?",
+      "tag": "login_help"
+    },
+    {
+      "question": "What should I do if I forget my password?",
+      "tag": "password_reset"
+    },
+    {
+      "question": "Why am I seeing an 'unauthorized' message?",
+      "tag": "auth_error"
+    },
+    {
+      "question": "How do I switch between HR and employee views?",
+      "tag": "role_switching"
+    },
+    {
+      "question": "Where do I find my onboarding tasks?",
+      "tag": "dashboard_tasks"
+    },
+    {
+      "question": "How do I check my progress?",
+      "tag": "progress_tracking"
+    },
+    {
+      "question": "Where can I see my team or manager info?",
+      "tag": "team_info"
+    },
+    {
+      "question": "What should I do if a page doesn’t load?",
+      "tag": "navigation_error"
+    },
+    {
+      "question": "What can SUPA Chat help me with?",
+      "tag": "chat_capabilities"
+    },
+    {
+      "question": "Can I upload documents here?",
+      "tag": "chat_file_upload"
+    },
+    {
+      "question": "How do I restart or clear the chat?",
+      "tag": "chat_reset"
+    },
+    {
+      "question": "Can I see my previous questions?",
+      "tag": "chat_history"
+    },
+    {
+      "question": "Is this chat only for onboarding?",
+      "tag": "chat_scope"
+    },
+    {
+      "question": "Where are my submitted documents stored?",
+      "tag": "document_storage"
+    },
+    {
+      "question": "How do I update my personal details?",
+      "tag": "profile_update"
+    },
+    {
+      "question": "Who can see my onboarding information?",
+      "tag": "data_visibility"
+    },
+    {
+      "question": "Is my data safe in this system?",
+      "tag": "data_security"
+    }
+  ]

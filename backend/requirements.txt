@@ -1,0 +1,42 @@
+# ===========================================
+# AI HR Onboarding Backend - Requirements
+# ===========================================
+# Install using: pip install -r requirements.txt
+
+# FastAPI and Web Server
+fastapi==0.118.0
+uvicorn[standard]==0.37.0
+python-multipart==0.0.12
+
+# Database
+sqlalchemy==2.0.39
+pymysql==1.1.2
+
+# Authentication & Security
+python-jose[cryptography]==3.5.0
+passlib[bcrypt]==1.7.4
+cryptography==46.0.2
+
+# Pydantic & Validation
+pydantic==2.12.0
+pydantic-settings==2.11.0
+pydantic-core==2.41.1
+email-validator==2.3.0
+
+# Environment & Configuration
+python-dotenv==1.1.1
+
+# AI/ML Libraries
+google-generativeai==0.8.5
+
+# HTTP Client
+requests==2.32.3
+
+# ===========================================
+# Notes:
+# ===========================================
+# - Standard library modules (os, json, logging, datetime, smtplib, imaplib, 
+#   email, base64, subprocess, re, traceback, typing, uuid) are built-in and 
+#   don't need to be installed
+# - openai and sendgrid were removed as they are not used in the codebase
+# - All dependencies are tested and working with Python 3.8+

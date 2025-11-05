@@ -1,0 +1,5 @@
+IT Usage & Security
+- Use company devices and networks responsibly.
+- Do not install unauthorized software or share credentials.
+- All code must be committed to approved repositories with proper access control.
+- Report any security breaches or suspicious activity immediately.
