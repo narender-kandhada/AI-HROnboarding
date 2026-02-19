@@ -6,7 +6,7 @@
     "description": "Frontend for AI HR Onboarding Assistant - handles onboarding forms, chatbot UI, and progress tracking.",
     "scripts": {
         "dev": "vite",
-        "build": "vite build",
+        "build": "npx vite build",
         "preview": "vite preview"
     },
     "dependencies": {
