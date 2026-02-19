@@ -38,7 +38,7 @@ else:
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
         "http://127.0.0.1:5173",
-        "https://hronboarding.sumerudigital.com",
+        "https://ai-hr-onboarding.vercel.app",
         "http://hronboarding.sumerudigital.com",
     ]
 
