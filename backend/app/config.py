@@ -4,9 +4,10 @@ from typing import Optional
 
 class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./novabot.db"
-    OPENAI_API_KEY: str
-    GEMINI_API_KEY: Optional[str]
 
+    # 🔥 MAKE AI KEYS OPTIONAL
+    OPENAI_API_KEY: Optional[str] = None
+    GEMINI_API_KEY: Optional[str] = None
 
     class Config:
         env_file = ".env"
