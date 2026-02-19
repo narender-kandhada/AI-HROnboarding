@@ -17,7 +17,7 @@ from app.utils.security import (
     create_access_token,
     verify_password,
     decrypt_password,
-    get_password_hash
+    pwd_context
 )
 from app.chat_api import router as chat_router
 
@@ -104,17 +104,9 @@ async def hr_login_post(payload: HRLoginRequest):
 # ------------------------------------------------------------------
 @app.post("/bootstrap/hr")
 def bootstrap_hr():
-    """
-    TEMPORARY ENDPOINT
-    Call ONCE to create first HR user, then DELETE this route.
-    """
     db = SessionLocal()
 
-    existing = (
-        db.query(Employee)
-        .filter(Employee.department == "HR")
-        .first()
-    )
+    existing = db.query(Employee).filter(Employee.department == "HR").first()
     if existing:
         return {"message": "HR already exists"}
 
@@ -130,7 +122,7 @@ def bootstrap_hr():
     it_account = ITAccount(
         employee_id=employee.id,
         company_email="hr@company.com",
-        company_password=get_password_hash("Admin@123")
+        company_password=pwd_context.hash("Admin@123")
     )
     db.add(it_account)
     db.commit()
