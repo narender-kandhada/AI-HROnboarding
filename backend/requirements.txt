@@ -31,6 +31,9 @@ google-generativeai==0.8.5
 # HTTP Client
 requests==2.32.3
 
+# Email (SendGrid HTTP API)
+sendgrid==6.11.0
+
 # ===========================================
 # Notes:
 # ===========================================

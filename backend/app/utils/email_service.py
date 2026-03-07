@@ -1,4 +1,5 @@
 import os
+import base64
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -6,22 +7,24 @@ from email.mime.application import MIMEApplication
 from email.message import Message
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import (
+    Mail, Attachment, FileContent, FileName, FileType, Disposition
+)
 from app.database import SessionLocal
 from app.models import EmailAccount
 
 
 load_dotenv()
 
-# Gmail SMTP Settings
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+
+# Gmail SMTP Settings (fallback)
 GMAIL_SMTP_SERVER = os.getenv("GMAIL_SMTP_SERVER", "smtp.gmail.com")
-GMAIL_SMTP_PORT = int(os.getenv("GMAIL_SMTP_PORT", "587"))  # TLS port (587) or SSL (465)
+GMAIL_SMTP_PORT = int(os.getenv("GMAIL_SMTP_PORT", "587"))
 
 def get_app_password_for_email(email: str) -> str:
-    """Look up the Gmail App Password for a sender email from .env
-    
-    Format in .env: HR_APP_PASSWORD_<email>=<16-char-app-password>
-    Example: HR_APP_PASSWORD_user@gmail.com=abcdefghijklmnop
-    """
+    """Look up the Gmail App Password for a sender email from .env"""
     key = f"HR_APP_PASSWORD_{email}"
     password = os.getenv(key)
     if not password:
@@ -39,7 +42,6 @@ def get_default_email_account(db: Session = None) -> EmailAccount:
     try:
         account = db.query(EmailAccount).filter(EmailAccount.is_default == "yes").first()
         if not account:
-            # If no default, get the first one
             account = db.query(EmailAccount).first()
         return account
     except Exception as e:
@@ -64,12 +66,82 @@ def get_email_account_by_id(account_id: int, db: Session = None) -> EmailAccount
         if db is not None:
             db.close()
 
-def save_to_sent_folder(from_email: str, from_password: str, msg: Message):
-    """Save email copy to Sent folder using IMAP (Optional - Gmail supports IMAP)"""
-    # Note: Gmail supports IMAP for saving to Sent folder
-    # For now, we'll skip this as it requires additional IMAP configuration
-    # Emails sent via Gmail SMTP are tracked in Gmail's Sent folder automatically
-    print("ℹ️ Email sent successfully via Gmail SMTP. It will appear in Gmail's Sent folder.")
+# --------------- SendGrid HTTP API ---------------
+
+def _send_via_sendgrid(
+    from_email: str,
+    to_email: str,
+    subject: str,
+    body: str,
+    attachment_path: str = None,
+):
+    """Send email via SendGrid Web API (HTTP-based, works on Render free tier)"""
+    if not SENDGRID_API_KEY:
+        raise ValueError("SENDGRID_API_KEY not set in environment variables")
+
+    message = Mail(
+        from_email=from_email,
+        to_emails=to_email,
+        subject=subject,
+        html_content=body,
+    )
+
+    if attachment_path and os.path.exists(attachment_path):
+        with open(attachment_path, "rb") as f:
+            file_data = f.read()
+        attachment = Attachment(
+            FileContent(base64.b64encode(file_data).decode()),
+            FileName(os.path.basename(attachment_path)),
+            FileType("application/pdf"),
+            Disposition("attachment"),
+        )
+        message.attachment = attachment
+
+    sg = SendGridAPIClient(SENDGRID_API_KEY)
+    response = sg.send(message)
+    print(f"✅ Email sent to {to_email} from {from_email} via SendGrid (status: {response.status_code})")
+    return True
+
+# --------------- Gmail SMTP (fallback) ---------------
+
+def _send_via_gmail_smtp(
+    from_email: str,
+    app_password: str,
+    to_email: str,
+    subject: str,
+    body: str,
+    attachment_path: str = None,
+):
+    """Send email using Gmail SMTP — used as fallback when SendGrid is unavailable"""
+    msg = MIMEMultipart()
+    msg["Subject"] = subject
+    msg["From"] = from_email
+    msg["To"] = to_email
+    msg.attach(MIMEText(body, "html"))
+
+    if attachment_path and os.path.exists(attachment_path):
+        try:
+            with open(attachment_path, "rb") as f:
+                pdf = MIMEApplication(f.read(), _subtype="pdf")
+                pdf.add_header("Content-Disposition", "attachment", filename=os.path.basename(attachment_path))
+                msg.attach(pdf)
+        except Exception as e:
+            print(f"⚠️ Could not attach file {attachment_path}: {e}")
+
+    if GMAIL_SMTP_PORT == 465:
+        with smtplib.SMTP_SSL(GMAIL_SMTP_SERVER, GMAIL_SMTP_PORT) as server:
+            server.login(from_email, app_password)
+            server.send_message(msg)
+    else:
+        with smtplib.SMTP(GMAIL_SMTP_SERVER, GMAIL_SMTP_PORT) as server:
+            server.starttls()
+            server.login(from_email, app_password)
+            server.send_message(msg)
+
+    print(f"✅ Email sent to {to_email} from {from_email} via Gmail SMTP")
+    return True
+
+# --------------- Public API (same signatures as before) ---------------
 
 def send_email_with_gmail(
     from_email: str,
@@ -80,50 +152,18 @@ def send_email_with_gmail(
     attachment_path: str = None,
     save_to_sent: bool = True
 ):
-    """Send email using Gmail SMTP with app password"""
+    """Send email — tries SendGrid HTTP API first, falls back to Gmail SMTP"""
+    # Try SendGrid first (works on Render free tier)
+    if SENDGRID_API_KEY:
+        try:
+            return _send_via_sendgrid(from_email, to_email, subject, body, attachment_path)
+        except Exception as e:
+            print(f"⚠️ SendGrid failed, falling back to Gmail SMTP: {e}")
+
+    # Fallback to Gmail SMTP
     try:
-        # Create multipart email
-        msg = MIMEMultipart()
-        msg["Subject"] = subject
-        msg["From"] = from_email
-        msg["To"] = to_email
-
-        # Attach HTML body
-        msg.attach(MIMEText(body, "html"))
-
-        # Attach file if provided
-        if attachment_path and os.path.exists(attachment_path):
-            try:
-                with open(attachment_path, "rb") as f:
-                    pdf = MIMEApplication(f.read(), _subtype="pdf")
-                    pdf.add_header("Content-Disposition", "attachment", filename=os.path.basename(attachment_path))
-                    msg.attach(pdf)
-            except Exception as e:
-                print(f"⚠️ Could not attach file {attachment_path}: {e}")
-
-        # Send email using Gmail SMTP
-        # Gmail uses TLS on port 587 or SSL on port 465
-        if GMAIL_SMTP_PORT == 465:
-            # SSL connection
-            with smtplib.SMTP_SSL(GMAIL_SMTP_SERVER, GMAIL_SMTP_PORT) as server:
-                server.login(from_email, app_password)  # Gmail uses email as username
-                server.send_message(msg)
-        else:
-            # TLS connection (default for port 587)
-            with smtplib.SMTP(GMAIL_SMTP_SERVER, GMAIL_SMTP_PORT) as server:
-                server.starttls()  # Enable TLS
-                server.login(from_email, app_password)  # Gmail uses email as username
-                server.send_message(msg)
-        
-        print(f"✅ Email sent to {to_email} from {from_email} via Gmail SMTP")
-        
-        # Save to Sent folder if requested (Gmail automatically saves to Sent folder)
-        if save_to_sent:
-            save_to_sent_folder(from_email, app_password, msg)
-        
-        return True
+        return _send_via_gmail_smtp(from_email, app_password, to_email, subject, body, attachment_path)
     except smtplib.SMTPAuthenticationError as e:
-        # Provide clear operational guidance for common Gmail auth failures.
         error_msg = (
             f"Gmail authentication failed for sender '{from_email}'. "
             "Use a Gmail App Password (16 characters) for that same sender account, "
@@ -136,7 +176,7 @@ def send_email_with_gmail(
         raise
 
 def send_onboarding_email(hr_email: str, hr_name: str, to_email: str, employee_name: str, link: str, nda_path: str, email_account_id: int = None):
-    """Send onboarding email using Gmail SMTP and database email account"""
+    """Send onboarding email using SendGrid (primary) or Gmail SMTP (fallback)"""
     subject = "Welcome to Sumeru Digitals — Start Your Onboarding"
     body = f"""
     <p>Hi {employee_name},</p>
@@ -148,7 +188,6 @@ def send_onboarding_email(hr_email: str, hr_name: str, to_email: str, employee_n
     <p>Best regards,<br>The HR Team</p>
     """
 
-    # Get email account from database
     db = SessionLocal()
     try:
         if email_account_id:
@@ -159,10 +198,8 @@ def send_onboarding_email(hr_email: str, hr_name: str, to_email: str, employee_n
         if not account:
             raise ValueError("No email account configured. Please add an email account in HR Dashboard.")
         
-        # Get app password from .env (not from database)
         app_password = get_app_password_for_email(account.email)
         
-        # Send email using Gmail SMTP
         send_email_with_gmail(
             from_email=account.email,
             app_password=app_password,
@@ -193,7 +230,6 @@ def send_email_credentials(
     <p>Best regards,<br>The IT Team</p>
     """
 
-    # Get email account from database
     db = SessionLocal()
     try:
         if email_account_id:
@@ -204,10 +240,8 @@ def send_email_credentials(
         if not account:
             raise ValueError("No email account configured. Please add an email account in HR Dashboard.")
         
-        # Get app password from .env (not from database)
         app_password = get_app_password_for_email(account.email)
         
-        # Send email using Gmail SMTP
         send_email_with_gmail(
             from_email=account.email,
             app_password=app_password,
