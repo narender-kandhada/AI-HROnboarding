@@ -88,6 +88,21 @@ export default function HrLogin() {
             Login
           </button>
 
+          {/* Default credentials for demo/interview access */}
+          <div className="mt-5 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm font-semibold text-blue-800 mb-2">Demo Credentials:</p>
+            <div className="text-sm text-gray-700 space-y-1">
+              <p>
+                <span className="font-medium">Email:</span>{" "}
+                <code className="bg-gray-100 px-1.5 py-0.5 rounded text-blue-900">test@user.com</code>
+              </p>
+              <p>
+                <span className="font-medium">Password:</span>{" "}
+                <code className="bg-gray-100 px-1.5 py-0.5 rounded text-blue-900">123456</code>
+              </p>
+            </div>
+          </div>
+
           <div className="mt-4 text-center text-sm text-gray-500">
             Forgot password?{" "}
             <button

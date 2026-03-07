@@ -9,6 +9,7 @@ export default function PreOnboarding() {
   const [email, setEmail] = useState("");
   const [department, setDepartment] = useState("");
   const [role, setRole] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const departmentRoles = {
@@ -38,9 +39,8 @@ export default function PreOnboarding() {
     }
     
     const apiUrl = getApiEndpoint("/employees");
-    console.log("📤 Pre-Onboarding - API URL:", apiUrl); // Debug log
-    console.log("🔐 Token exists:", !!token); // Debug log
 
+    setLoading(true);
     try {
       const res = await fetch(apiUrl, {
         method: "POST",
@@ -77,6 +77,8 @@ export default function PreOnboarding() {
     } catch (err) {
       console.error("❌ Network error:", err);
       alert("⚠️ Error connecting to backend. Please check your internet connection and try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -185,9 +187,10 @@ export default function PreOnboarding() {
             <div className="flex justify-center">
               <button
                 type="submit"
-                className="w-full md:w-auto bg-blue-700 hover:bg-blue-800 text-white font-semibold px-10 py-3 rounded transition"
+                disabled={loading}
+                className="w-full md:w-auto bg-blue-700 hover:bg-blue-800 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold px-10 py-3 rounded transition"
               >
-                Send Mail
+                {loading ? "Sending..." : "Send Mail"}
               </button>
             </div>
           </form>
