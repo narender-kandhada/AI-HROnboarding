@@ -54,6 +54,26 @@ def create_employee(
     if existing:
         raise HTTPException(status_code=400, detail=f"Employee with emp_id '{employee.emp_id}' already exists")
     
+    # Generate UUID token and onboarding link upfront
+    uuid_token = str(uuid.uuid4())
+    dashboard_link = f"{os.getenv('FRONTEND_BASE_URL')}/dashboard/{uuid_token}"
+    nda_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../assets/NDA Form.pdf"))
+
+    # 📧 Send email FIRST — don't create anything until email succeeds
+    try:
+        send_onboarding_email(
+            employee_name=employee.name,
+            to_email=employee.email,
+            link=dashboard_link,
+            hr_email=current_hr_user.email,
+            hr_name=current_hr_user.name,
+            nda_path=nda_path
+        )
+    except Exception as e:
+        print(f"❌ Failed to send onboarding email: {e}")
+        raise HTTPException(status_code=400, detail=f"Could not send onboarding email: {e}")
+
+    # ✅ Email sent — now create DB record
     db_employee = models.Employee(
         emp_id=employee.emp_id,
         name=employee.name,
@@ -61,13 +81,13 @@ def create_employee(
         role=employee.role,
         department=normalize_department(employee.department) if employee.department else None,
         status="pending",
-        uuid_token=str(uuid.uuid4())
+        uuid_token=uuid_token
     )
     db.add(db_employee)
     db.commit()
     db.refresh(db_employee)
 
-    # 🔧 Create folder using utility
+    # 📁 Create folder after DB record exists
     try:
         folder_name = create_employee_folder(employee.name)
         print(f"📁 Created folder: {folder_name}")
@@ -97,22 +117,6 @@ def create_employee(
         db.add(task)
 
     db.commit()
-
-    # Construct onboarding dashboard link
-    dashboard_link = f"{os.getenv('FRONTEND_BASE_URL')}/dashboard/{db_employee.uuid_token}"
-    nda_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../assets/NDA Form.pdf"))
-
-    try:
-        send_onboarding_email(
-            employee_name=db_employee.name,
-            to_email=db_employee.email,
-            link=dashboard_link,
-            hr_email=current_hr_user.email,
-            hr_name=current_hr_user.name,
-            nda_path=nda_path
-        )
-    except Exception as e:
-        print(f"❌ Failed to send onboarding email: {e}")
 
     return db_employee
 
