@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.database import Base
-from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime 
 import uuid
 

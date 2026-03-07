@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from sqlalchemy.orm import Session, joinedload
 from app import models, schemas
 from app.database import get_db
-from app.utils.email import send_onboarding_email
+from app.utils.email_service import send_onboarding_email
 from app.dependencies import get_current_hr_user
 from app.utils.document_parser import create_employee_folder
 import os
@@ -31,6 +31,7 @@ def normalize_department(dept):
 
 # Get all employees
 @router.get("/")
+@router.get("")
 def get_all_employees(db: Session = Depends(get_db)):
     """Get all employees with their personal info, tasks, and IT accounts"""
     employees = db.query(models.Employee).options(
@@ -42,6 +43,7 @@ def get_all_employees(db: Session = Depends(get_db)):
 
 # Create employee and send onboarding email
 @router.post("/", response_model=schemas.EmployeeCreate)
+@router.post("", response_model=schemas.EmployeeCreate)
 def create_employee(
     employee: schemas.EmployeeCreate,
     db: Session = Depends(get_db),
@@ -71,7 +73,7 @@ def create_employee(
         print(f"📁 Created folder: {folder_name}")
     except Exception as e:
         print(f"❌ Folder creation failed: {e}")
-        raise HTTPException(status_code=500, detail="Could not create employee folder")
+        raise HTTPException(status_code=500, detail="Could not create employee folder") from e
 
     # 💾 Save folder name to DB
     db_employee.folder_name = folder_name

@@ -4,7 +4,7 @@ from jose import jwt, JWTError
 from app.database import get_db
 from app import models
 from app.utils.token import SECRET_KEY, ALGORITHM
-from app.utils.email import send_onboarding_email
+from app.utils.email_service import send_onboarding_email
 from sqlalchemy.orm import Session
 import os
 import uuid
@@ -16,10 +16,11 @@ def get_current_hr(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload["sub"]
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    except JWTError as exc:
+        raise HTTPException(status_code=401, detail="Invalid token") from exc
 
 @router.post("/")
+@router.post("")
 def pre_onboard_employee(
     emp_id: str = Form(...),
     name: str = Form(...),
@@ -50,7 +51,7 @@ def pre_onboard_employee(
         print(f"📁 Created folder: {folder_path}")
     except Exception as e:
         print(f"❌ Folder creation failed: {e}")
-        raise HTTPException(status_code=500, detail="Could not create employee folder")
+        raise HTTPException(status_code=500, detail="Could not create employee folder") from e
 
     # 4. Save folder name to DB
     employee.folder_name = folder_name

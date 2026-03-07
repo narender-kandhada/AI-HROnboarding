@@ -22,6 +22,7 @@ class EmailAccountUpdate(BaseModel):
     notes: Optional[str] = None
 
 @router.get("/")
+@router.get("")
 def get_all_email_accounts(
     db: Session = Depends(get_db),
     hr_user = Depends(get_current_hr_user)
@@ -63,6 +64,7 @@ def get_default_email_account(
     }
 
 @router.post("/")
+@router.post("")
 def create_email_account(
     account_data: EmailAccountCreate,
     db: Session = Depends(get_db),
@@ -235,7 +237,7 @@ def test_email_account(
         raise HTTPException(status_code=404, detail="Email account not found")
     
     # Get app password from .env
-    from app.utils.email import send_email_with_gmail, get_app_password_for_email
+    from app.utils.email_service import send_email_with_gmail, get_app_password_for_email
     
     try:
         app_password = get_app_password_for_email(account.email)
@@ -248,5 +250,5 @@ def test_email_account(
         )
         return {"message": f"Test email sent successfully to {test_email}"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to send test email: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to send test email: {str(e)}") from e
 

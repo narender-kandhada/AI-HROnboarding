@@ -24,6 +24,7 @@ class ITAccountUpdate(BaseModel):
         pass
 
 @router.get("/")
+@router.get("")
 def get_all_it_accounts(
     db: Session = Depends(get_db),
     hr_user = Depends(get_current_hr_user)
@@ -66,6 +67,7 @@ def get_employee_it_account(
     }
 
 @router.post("/")
+@router.post("")
 def create_it_account(
     account_data: ITAccountCreate,
     db: Session = Depends(get_db),
@@ -87,7 +89,7 @@ def create_it_account(
     
     # Send email credentials FIRST - only save to DB if email succeeds
     try:
-        from app.utils.email import send_email_credentials
+        from app.utils.email_service import send_email_credentials
         send_email_credentials(
             to_email=employee.email,
             employee_name=employee.name,
@@ -100,7 +102,7 @@ def create_it_account(
         raise HTTPException(
             status_code=500,
             detail=f"Failed to send credentials email: {str(e)}. Account was NOT created."
-        )
+        ) from e
     
     # Email sent successfully - now save to database
     new_account = ITAccount(
@@ -147,7 +149,7 @@ def update_it_account(
             valid = validate_email(account_data.company_email)
             account.company_email = valid.email
         except EmailNotValidError as e:
-            raise HTTPException(status_code=422, detail=f"Invalid email format: {str(e)}")
+            raise HTTPException(status_code=422, detail=f"Invalid email format: {str(e)}") from e
     
     # Update password
     if account_data.company_password is not None:

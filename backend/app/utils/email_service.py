@@ -69,7 +69,7 @@ def save_to_sent_folder(from_email: str, from_password: str, msg: Message):
     # Note: Gmail supports IMAP for saving to Sent folder
     # For now, we'll skip this as it requires additional IMAP configuration
     # Emails sent via Gmail SMTP are tracked in Gmail's Sent folder automatically
-    print(f"ℹ️ Email sent successfully via Gmail SMTP. It will appear in Gmail's Sent folder.")
+    print("ℹ️ Email sent successfully via Gmail SMTP. It will appear in Gmail's Sent folder.")
 
 def send_email_with_gmail(
     from_email: str,

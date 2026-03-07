@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utils.security import verify_password, hash_password
-from app.utils.token import create_access_token
 from app.dependencies import get_current_hr_user
 from pydantic import BaseModel
 from datetime import datetime
@@ -49,7 +48,6 @@ def reset_password(
         raise HTTPException(status_code=500, detail="Could not retrieve IT account")
     
     it_account = current_hr_user.it_account
-    employee = current_hr_user.employee
     
     # Validate inputs
     if not reset_data.old_password:

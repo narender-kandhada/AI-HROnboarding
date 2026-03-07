@@ -4,11 +4,11 @@ from app.database import get_db
 from app.schemas import FeedbackTokenBase
 from app.models import Employee, Feedback
 from datetime import datetime
-from app import models, schemas
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
 @router.get("/")
+@router.get("")
 def get_all_feedback(db: Session = Depends(get_db)):
     """Get all feedback submissions"""
     feedbacks = db.query(Feedback).all()

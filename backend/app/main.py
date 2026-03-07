@@ -1,11 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
-import subprocess
-import logging
 
 from app.database import engine, Base, SessionLocal
 from app.routes import (

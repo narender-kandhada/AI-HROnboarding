@@ -1,9 +1,7 @@
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from sqlalchemy import false, true
 from sqlalchemy.orm import Session, joinedload
-from app.models import Employee, ITAccount
 from app.database import get_db
 from dotenv import load_dotenv
 from app import models
@@ -26,8 +24,8 @@ def get_current_hr_user(token: str = Depends(oauth2_scheme), db: Session = Depen
         company_email = payload.get("sub")
         if company_email is None:
             raise HTTPException(status_code=401, detail="Invalid token")
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    except JWTError as exc:
+        raise HTTPException(status_code=401, detail="Invalid token") from exc
 
     # Handle default HR admin (works without database data)
     if payload.get("is_default_hr") and company_email == DEFAULT_HR_EMAIL:
