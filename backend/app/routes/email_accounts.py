@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import EmailAccount
 from app.dependencies import get_current_hr_user
-from app.utils.security import encrypt_password, decrypt_password, hash_password, verify_password
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr
@@ -12,14 +11,12 @@ router = APIRouter(prefix="/email-accounts", tags=["email-accounts"])
 
 class EmailAccountCreate(BaseModel):
     email: EmailStr
-    password: str
     display_name: Optional[str] = None
     is_default: Optional[str] = "no"
     notes: Optional[str] = None
 
 class EmailAccountUpdate(BaseModel):
     email: Optional[EmailStr] = None
-    password: Optional[str] = None
     display_name: Optional[str] = None
     is_default: Optional[str] = None
     notes: Optional[str] = None
@@ -82,16 +79,9 @@ def create_email_account(
         db.query(EmailAccount).filter(EmailAccount.is_default == "yes").update({"is_default": "no"})
         db.commit()
     
-    # Encrypt password using Fernet (symmetric encryption for email sending)
-    try:
-        encrypted_password = encrypt_password(account_data.password)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to encrypt password: {str(e)}. Please ensure IT_ENCRYPTION_KEY is set in .env")
-    
     # Create account
     new_account = EmailAccount(
         email=account_data.email,
-        password=encrypted_password,
         display_name=account_data.display_name,
         is_default=account_data.is_default,
         notes=account_data.notes
@@ -126,12 +116,6 @@ def update_email_account(
         if existing:
             raise HTTPException(status_code=400, detail="Email already exists")
         account.email = account_data.email
-    
-    if account_data.password is not None:
-        try:
-            account.password = encrypt_password(account_data.password)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to encrypt password: {str(e)}. Please ensure IT_ENCRYPTION_KEY is set in .env")
     
     if account_data.display_name is not None:
         account.display_name = account_data.display_name
@@ -214,29 +198,27 @@ def verify_email_account_password(
     db: Session = Depends(get_db),
     hr_user = Depends(get_current_hr_user)
 ):
-    """Verify that email account password can be decrypted correctly (HR only)"""
+    """Verify that a Gmail App Password is configured in .env for this email account (HR only)"""
     account = db.query(EmailAccount).filter(EmailAccount.id == account_id).first()
     
     if not account:
         raise HTTPException(status_code=404, detail="Email account not found")
     
-    # Try to decrypt password
-    try:
-        decrypted_password = decrypt_password(account.password)
-        if decrypted_password:
-            return {
-                "status": "success",
-                "message": "Password can be decrypted successfully",
-                "email": account.email,
-                "password_length": len(decrypted_password),
-                "note": "Password is stored encrypted and can be retrieved for email sending"
-            }
-        else:
-            raise HTTPException(status_code=500, detail="Password decryption returned None")
-    except Exception as e:
+    import os
+    env_key = f"HR_APP_PASSWORD_{account.email}"
+    app_password = os.getenv(env_key)
+    
+    if app_password:
+        return {
+            "status": "success",
+            "message": "App password is configured in .env",
+            "email": account.email,
+            "env_key": env_key,
+        }
+    else:
         raise HTTPException(
-            status_code=500, 
-            detail=f"Could not decrypt password: {str(e)}. Please ensure IT_ENCRYPTION_KEY is set correctly in .env file."
+            status_code=500,
+            detail=f"No app password found in .env. Add: {env_key}=<your-16-char-gmail-app-password>"
         )
 
 @router.get("/{account_id}/test")
@@ -252,22 +234,14 @@ def test_email_account(
     if not account:
         raise HTTPException(status_code=404, detail="Email account not found")
     
-    # Decrypt password for email sending
-    try:
-        decrypted_password = decrypt_password(account.password)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, 
-            detail=f"Could not decrypt password: {str(e)}. Please ensure IT_ENCRYPTION_KEY is set correctly in .env file."
-        )
-    
-    # Send test email
-    from app.utils.email import send_email_with_gmail
+    # Get app password from .env
+    from app.utils.email import send_email_with_gmail, get_app_password_for_email
     
     try:
+        app_password = get_app_password_for_email(account.email)
         send_email_with_gmail(
             from_email=account.email,
-            app_password=decrypted_password,  # App password is stored as password
+            app_password=app_password,
             to_email=test_email,
             subject="Test Email from Sumeru Digitals",
             body=f"<p>This is a test email from {account.email}.</p><p>If you received this, the email configuration is working correctly!</p>"

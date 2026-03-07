@@ -145,9 +145,7 @@ class ITAccount(Base):
     
     # Company email and credentials
     company_email = Column(String(255), nullable=False)
-    company_password = Column(Text, nullable=False)  # Store hashed (for login verification)
-    # Optional: encrypted version for email sharing (may not exist in older databases)
-    company_password_encrypted = Column(Text, nullable=True)
+    company_password = Column(Text, nullable=False)  # Store hashed (bcrypt)
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -161,7 +159,6 @@ class EmailAccount(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), nullable=False, unique=True)
-    password = Column(Text, nullable=False)  # Store encrypted
     display_name = Column(String(255), nullable=True)  # Display name for the email account
     is_default = Column(String(10), default="no")  # "yes" or "no" - only one can be default
     created_at = Column(DateTime, default=datetime.utcnow)

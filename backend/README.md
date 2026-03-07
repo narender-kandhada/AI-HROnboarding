@@ -1,285 +1,259 @@
-# AI HR Onboarding Backend
+# AI HR Onboarding — Backend
 
-A comprehensive FastAPI backend for an AI-driven HR onboarding system that automates employee onboarding, manages HR workflows, and provides intelligent chatbot assistance.
+FastAPI backend for the AI HR Onboarding system. Handles employee management, authentication, document storage, training tracking, email sending, IT account management, and AI chatbot (SUPA).
 
-## 🚀 Features
-
-- **Employee Onboarding Management** - Complete workflow from pre-onboarding to joining day
-- **AI-Powered Chatbot (SUPA)** - Intelligent assistant for employees and HR
-- **Document Management** - Upload, validate, and store employee documents (PDF only)
-- **IT Account Management** - Create and manage company email accounts for employees
-- **Email Account Management** - Configure multiple email accounts for sending onboarding emails
-- **Training Module Tracking** - Track training completion and certifications
-- **Feedback System** - Collect and analyze employee feedback
-- **HR Dashboard APIs** - Analytics, employee tracking, and reporting
-- **Authentication & Authorization** - JWT-based auth with HR department verification
-- **Password Reset** - Secure password reset for HR users
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 backend/
 ├── app/
-│   ├── main.py              # FastAPI app entry point
-│   ├── config.py             # Settings and environment variables
-│   ├── database.py           # SQLAlchemy database setup
-│   ├── models.py             # Database models (Employee, Task, ITAccount, etc.)
-│   ├── schemas.py            # Pydantic schemas for validation
-│   ├── dependencies.py       # FastAPI dependencies (auth, DB sessions)
-│   ├── chat_api.py           # Chatbot API endpoints
+│   ├── main.py              # FastAPI app, CORS, HR login endpoint
+│   ├── config.py            # Settings and environment variables
+│   ├── database.py          # SQLAlchemy engine & session setup
+│   ├── models.py            # Database models (Employee, ITAccount, EmailAccount, etc.)
+│   ├── schemas.py           # Pydantic validation schemas
+│   ├── dependencies.py      # Auth dependencies (get_current_hr_user)
+│   ├── chat_api.py          # Chatbot API router
 │   │
-│   ├── routes/               # API route handlers
-│   │   ├── auth.py           # Authentication (HR login, password reset)
-│   │   ├── employee.py       # Employee CRUD operations
+│   ├── routes/
+│   │   ├── auth.py           # Authentication (login, password reset)
+│   │   ├── employee.py       # Employee CRUD
 │   │   ├── preonboarding.py  # Pre-onboarding workflow
 │   │   ├── training.py       # Training module management
 │   │   ├── feedback.py       # Feedback collection
-│   │   ├── documents.py      # Document management
+│   │   ├── documents.py      # Document upload/retrieval
 │   │   ├── tasks.py          # Task management
-│   │   ├── hr.py             # HR-specific endpoints
-│   │   ├── it_accounts.py    # IT account management
+│   │   ├── hr.py             # HR analytics endpoints
+│   │   ├── it_accounts.py    # IT account CRUD
 │   │   ├── email_accounts.py # Email account configuration
+│   │   ├── module_progress.py # Module progress tracking
 │   │   └── chatbot.py        # Chatbot endpoints
 │   │
-│   ├── mcp_tools/            # AI and business logic tools
-│   │   ├── task_tracker.py   # Employee and onboarding analytics
+│   ├── mcp_tools/
 │   │   ├── chatbot_engine.py # Gemini AI integration
-│   │   ├── grounding.py      # Policy and context retrieval
+│   │   ├── grounding.py      # Policy & context retrieval
 │   │   ├── intent.py         # Query intent detection
-│   │   ├── prompt_builder.py # Prompt construction for AI
-│   │   └── ...
+│   │   ├── prompt_builder.py # AI prompt construction
+│   │   ├── prompt_enricher.py # Prompt enrichment
+│   │   ├── task_tracker.py   # Employee & onboarding analytics
+│   │   ├── get_employee_status.py # Employee status queries
+│   │   ├── analyze_feedback.py    # Feedback analysis
+│   │   ├── schedule_meeting.py    # Meeting scheduling
+│   │   └── send_reminder.py       # Reminder sending
 │   │
-│   ├── utils/                 # Utility functions
-│   │   ├── security.py       # Password hashing, encryption (Fernet)
-│   │   ├── token.py          # JWT token generation
-│   │   ├── email.py          # Email sending (Hostinger SMTP/IMAP)
-│   │   └── document_parser.py # Document handling
+│   ├── utils/
+│   │   ├── security.py       # Password hashing (bcrypt), JWT tokens
+│   │   ├── email.py          # Gmail SMTP email sending
+│   │   └── (token.py)        # JWT token generation
 │   │
-│   ├── assets/               # Static assets
-│   │   ├── NDA Form.pdf      # NDA template
+│   ├── assets/
 │   │   └── policies/         # Company policy documents
 │   │
-│   └── uploads/              # Employee document storage
+│   └── uploads/              # Employee document storage (per-employee folders)
 │
-├── migrations/               # Database migration scripts
-├── scripts/                 # Utility scripts
+├── scripts/
+│   ├── seed_task_modules.py       # Seed task modules
+│   ├── normalize_departments.py   # Normalize department names
+│   ├── backfill_folders.py        # Backfill employee folders
+│   └── sync_existing_employees.py # Sync existing employees
+│
+├── generate_key.py          # Generate SECRET_KEY
 ├── requirements.txt         # Python dependencies
 └── README.md                # This file
 ```
 
-## 🛠️ Setup
+## Setup
 
 ### Prerequisites
-
-- Python 3.8 or higher
-- MySQL database (or SQLite for development)
-- Hostinger email account (for email sending)
-- Google Gemini API key (for AI chatbot)
+- Python 3.8+
+- MySQL (or SQLite for development)
+- Google Gemini API key
 
 ### Installation
 
-1. **Clone the repository** (if applicable)
+```bash
+cd backend
+python -m venv venv
 
-2. **Navigate to backend directory**
-   ```bash
-   cd backend
-   ```
+# Windows
+venv\Scripts\activate
+# Linux/Mac
+source venv/bin/activate
 
-3. **Create a virtual environment** (recommended)
-   ```bash
-   python -m venv venv
-   
-   # Windows
-   venv\Scripts\activate
-   
-   # Linux/Mac
-   source venv/bin/activate
-   ```
+pip install -r requirements.txt
+```
 
-4. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Environment Variables
 
-5. **Set up environment variables**
-   
-   Create a `.env` file in the `backend/` directory (or copy from `env.example`):
-   ```env
-   # Database
-   DATABASE_URL=mysql+pymysql://user:password@localhost:3306/ai_hr_db
-   # or for SQLite: sqlite:///./novabot.db
-   
-   # Security (CRITICAL - Generate new keys for production)
-   SECRET_KEY=your-secret-key-here
-   IT_ENCRYPTION_KEY=your-fernet-encryption-key
-   
-   # AI
-   OPENAI_API_KEY=your-openai-key  # Optional
-   GEMINI_API_KEY=your-gemini-api-key
-   
-   # Email (Hostinger - hardcoded in code, update if using different provider)
-   # HOSTINGER_SMTP_SERVER=smtp.hostinger.com
-   # HOSTINGER_SMTP_PORT=587
-   # HOSTINGER_IMAP_SERVER=imap.hostinger.com
-   # HOSTINGER_IMAP_PORT=993
-   ```
+Create `.env` in the `backend/` directory:
 
-   **Generate keys:**
-   ```bash
-   # Generate all keys at once (recommended)
-   python generate_all_keys.py
-   
-   # Or generate individually
-   python generate_key.py  # For IT_ENCRYPTION_KEY
-   python -c "import secrets; print(secrets.token_urlsafe(32))"  # For SECRET_KEY
-   ```
-   
-   **⚠️ Important for Deployment:**
-   - Before deploying, replace ALL personal keys with organization keys
-   - See [../DEPLOYMENT_KEYS_CHECKLIST.md](../DEPLOYMENT_KEYS_CHECKLIST.md) for complete guide
-   - Never commit `.env` files to version control
+```env
+# Database
+DATABASE_URL=mysql+pymysql://user:password@localhost:3306/onboarding_db
+# For SQLite (dev): sqlite:///./onboarding.db
 
-6. **Run database migrations** (if needed)
-   ```bash
-   # The app will create tables automatically on startup
-   # For manual migrations, see migrations/ folder
-   ```
+# Security
+SECRET_KEY=your-secret-key-here
 
-7. **Start the development server**
-   ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
+# AI
+GEMINI_API_KEY=your-gemini-api-key
+OPENAI_API_KEY=your-openai-key          # Optional
 
-   The API will be available at `http://localhost:8000`
+# Email (Gmail SMTP)
+GMAIL_SMTP_SERVER=smtp.gmail.com
+GMAIL_SMTP_PORT=587
 
-8. **Access API documentation**
-   - Swagger UI: `http://localhost:8000/docs`
-   - ReDoc: `http://localhost:8000/redoc`
+# Frontend URL (for CORS and email links)
+FRONTEND_BASE_URL=http://localhost:3001
 
-## 🔑 Key Dependencies
+# CORS (comma-separated, optional — defaults are set in main.py)
+ALLOWED_ORIGINS=http://localhost:3001,http://localhost:5173
+```
 
-- **FastAPI** (0.118.0) - Modern web framework
-- **SQLAlchemy** (2.0.39) - ORM
-- **PyMySQL** (1.1.2) - MySQL driver
-- **python-jose** (3.5.0) - JWT authentication
-- **passlib** (1.7.4) - Password hashing (bcrypt)
-- **cryptography** (46.0.2) - Encryption for sensitive data
-- **google-generativeai** (0.8.5) - Gemini AI integration
-- **requests** (2.32.3) - HTTP client for Ollama/local LLM
-- **pydantic** (2.12.0) - Data validation
-- **python-dotenv** (1.1.1) - Environment variable management
+Generate `SECRET_KEY`:
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
 
-## 📡 Main API Endpoints
+### Run
+
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+- API: `http://localhost:8000`
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+Tables are created automatically on startup via SQLAlchemy.
+
+## Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| fastapi | 0.118.0 | Web framework |
+| uvicorn | 0.37.0 | ASGI server |
+| sqlalchemy | 2.0.39 | ORM |
+| pymysql | 1.1.2 | MySQL driver |
+| python-jose | 3.5.0 | JWT tokens |
+| passlib | 1.7.4 | Password hashing (bcrypt) |
+| pydantic | 2.12.0 | Data validation |
+| google-generativeai | 0.8.5 | Gemini AI |
+| python-dotenv | 1.1.1 | .env file loading |
+| email-validator | 2.3.0 | Email validation |
+| python-multipart | 0.0.12 | File uploads |
+| requests | 2.32.3 | HTTP client (Ollama/LLM) |
+
+Full list in `requirements.txt`.
+
+## API Endpoints
 
 ### Authentication
-- `POST /auth/hr_login_post` - HR login (uses IT accounts)
-- `POST /auth/reset-password` - Reset HR password
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/hr_login_post` | HR login (returns JWT) |
+| POST | `/auth/reset-password` | Reset HR password |
+| GET | `/auth/me` | Get current user info |
 
-### Employee Management
-- `GET /employees` - List all employees
-- `POST /employees` - Create new employee
-- `GET /employees/{id}` - Get employee details
-- `PUT /employees/{id}` - Update employee
-- `POST /employees/{id}/personal-info` - Submit personal details
+### Employees
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/employees` | List all employees |
+| POST | `/employees` | Create employee |
+| GET | `/employees/{id}` | Get employee by ID |
+| PUT | `/employees/{id}` | Update employee |
+| PUT | `/employees/{id}/status` | Enable/disable employee |
+| POST | `/employees/{id}/personal-info` | Submit personal details |
 
 ### Documents
-- `POST /employees/{id}/documents` - Upload documents (PDF only)
-- `GET /employees/{id}/documents` - Get employee documents
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/employees/{id}/documents` | Upload documents (PDF only) |
+| GET | `/documents/employee/{id}/files` | List employee files |
+| GET | `/documents/employee/{id}/file/{filename}` | View/download file |
 
 ### Training
-- `POST /training/{employee_id}` - Submit training certificates
-- `GET /training/{employee_id}` - Get training status
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/training/{employee_id}` | Submit training certificates |
+| GET | `/training/{employee_id}` | Get training status |
 
 ### IT Accounts
-- `POST /it-accounts` - Create IT account
-- `GET /it-accounts` - List all IT accounts
-- `GET /it-accounts/employee/{employee_id}` - Get employee IT account
-- `PUT /it-accounts/{account_id}` - Update IT account
-- `DELETE /it-accounts/{account_id}` - Delete IT account
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/it-accounts` | Create IT account |
+| GET | `/it-accounts` | List all IT accounts |
+| GET | `/it-accounts/employee/{id}` | Get employee IT account |
+| GET | `/it-accounts/employee/{id}/password` | Get employee password |
+| PUT | `/it-accounts/employee/{id}` | Update IT account |
+| DELETE | `/it-accounts/employee/{id}` | Delete IT account |
 
 ### Email Accounts
-- `POST /email-accounts` - Add email account
-- `GET /email-accounts` - List email accounts
-- `GET /email-accounts/default` - Get default email account
-- `PUT /email-accounts/{id}/set-default` - Set default email
-- `DELETE /email-accounts/{id}` - Delete email account
-
-### Chatbot (SUPA)
-- `POST /chatbot/chat` - Send message to AI chatbot
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/email-accounts` | Add email account |
+| GET | `/email-accounts` | List email accounts |
+| GET | `/email-accounts/default` | Get default account |
+| PUT | `/email-accounts/{id}` | Update email account |
+| POST | `/email-accounts/{id}/set-default` | Set as default |
+| DELETE | `/email-accounts/{id}` | Delete email account |
+| GET | `/email-accounts/{id}/verify-password` | Verify password |
+| GET | `/email-accounts/{id}/test` | Send test email |
 
 ### Pre-Onboarding
-- `POST /preonboarding/send-email` - Send onboarding email
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/preonboarding/send-email` | Send onboarding email |
 
-See `POSTMAN_API_GUIDE.md` for detailed API documentation.
+### HR Analytics
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/hr/onboarding_status` | Onboarding statistics |
 
-## 🔒 Security Features
+### Chatbot
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/chatbot/chat` | Chat with SUPA AI |
 
-- **Password Hashing**: bcrypt for secure password storage
-- **Encryption**: Fernet encryption for sensitive data (IT passwords)
-- **JWT Tokens**: Secure token-based authentication
-- **Department Verification**: Only HR department employees can access HR routes
-- **Input Validation**: Pydantic schemas for all API inputs
-- **File Validation**: PDF-only document uploads with format validation
+### Feedback
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/feedback` | Submit feedback |
+| GET | `/feedback` | Get all feedback |
 
-## 🧪 Testing
+## Security
 
-### Manual Testing
-Use the Swagger UI at `/docs` for interactive API testing.
+- **Password Hashing**: bcrypt via passlib — used for IT account login passwords
+- **JWT Tokens**: python-jose — 1-hour expiry, HS256 algorithm
+- **HR Department Check**: Only employees with department="HR" can access HR routes
+- **Input Validation**: Pydantic schemas on all endpoints
+- **File Validation**: PDF-only uploads, validated on server
+- **CORS**: Configurable allowed origins
 
-### Postman
-Import the collection from `POSTMAN_API_GUIDE.md` for comprehensive testing.
+## Utility Scripts
 
-## 📚 Additional Documentation
+```bash
+# Seed default task modules
+python scripts/seed_task_modules.py
 
-- `POSTMAN_API_GUIDE.md` - Complete API reference
-- `IT_ACCOUNT_SETUP.md` - IT account management guide
-- `EMAIL_ACCOUNT_SETUP.md` - Email configuration guide
-- `DEPENDENCIES.md` - Dependency overview
-- `CLEANUP_GUIDE.md` - Code cleanup reference
-- **[../DEPLOYMENT_KEYS_CHECKLIST.md](../DEPLOYMENT_KEYS_CHECKLIST.md)** - 🔑 **Complete deployment keys guide**
-- **[../KEYS_REPLACEMENT_SUMMARY.md](../KEYS_REPLACEMENT_SUMMARY.md)** - Quick keys reference
-- **[../KEYS_REPLACEMENT_TABLE.md](../KEYS_REPLACEMENT_TABLE.md)** - Keys in table format
+# Normalize department names in database
+python scripts/normalize_departments.py
 
-## 🐛 Troubleshooting
+# Backfill employee upload folders
+python scripts/backfill_folders.py
 
-### Database Connection Issues
-- Verify `DATABASE_URL` in `.env`
-- Ensure MySQL server is running
-- Check database credentials
+# Sync existing employees
+python scripts/sync_existing_employees.py
+```
 
-### Email Sending Issues
-- Verify Hostinger SMTP/IMAP credentials
-- Check `IT_ENCRYPTION_KEY` is set correctly
-- Ensure email account is configured in HR Dashboard
+## Troubleshooting
 
-### Authentication Errors
-- Verify `SECRET_KEY` is set in `.env`
-- Check employee department is set to "HR"
-- Ensure IT account exists for HR employee
+| Problem | Solution |
+|---------|----------|
+| Database connection error | Verify `DATABASE_URL` in `.env`, ensure MySQL is running |
+| Import errors | Ensure virtual env is activated, run `pip install -r requirements.txt` |
+| Auth errors | Check `SECRET_KEY` is set, verify employee has department="HR" and IT account |
+| Email sending fails | Check email account configured in HR dashboard, verify Gmail app password |
+| Port already in use | `lsof -i :8000` to find process, kill it or change port |
+| CORS errors | Add frontend domain to `ALLOWED_ORIGINS` in `.env` or `main.py` |
 
-### Encryption Errors
-- Run `python generate_key.py` to generate `IT_ENCRYPTION_KEY`
-- Or use `python generate_all_keys.py` to generate all keys
-- Ensure no extra spaces/quotes in `.env` file
-- ⚠️ **CRITICAL**: If `IT_ENCRYPTION_KEY` changes, all encrypted passwords become unreadable
-
-### Deployment Issues
-- Ensure all personal keys are replaced (see [DEPLOYMENT_KEYS_CHECKLIST.md](../DEPLOYMENT_KEYS_CHECKLIST.md))
-- Verify `DATABASE_URL` points to production database
-- Check all API keys are organization keys, not personal keys
-- Ensure `IT_ENCRYPTION_KEY` matches the key used to encrypt existing passwords
-
-## 🤝 Contributing
-
-1. Follow existing code structure
-2. Add proper error handling
-3. Update API documentation
-4. Test all endpoints
-
-## 📄 License
-
-MIT License
-
-## 👥 Authors
-
-Sumeru Digitals HR Team

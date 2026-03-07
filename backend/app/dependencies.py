@@ -14,11 +14,12 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/hr-login")
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
+DEFAULT_HR_EMAIL = os.getenv("DEFAULT_HR_EMAIL", "test@user.com")
 
 def get_current_hr_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
-    Get current HR user from JWT token - uses IT accounts with HR department
-    Returns employee object if valid HR department employee
+    Get current HR user from JWT token - uses IT accounts with HR department.
+    Also supports default HR admin when database is empty.
     """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -27,6 +28,18 @@ def get_current_hr_user(token: str = Depends(oauth2_scheme), db: Session = Depen
             raise HTTPException(status_code=401, detail="Invalid token")
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+    # Handle default HR admin (works without database data)
+    if payload.get("is_default_hr") and company_email == DEFAULT_HR_EMAIL:
+        class HREmployee:
+            def __init__(self):
+                self.emp_id = "DEFAULT_HR"
+                self.email = DEFAULT_HR_EMAIL
+                self.name = "HR Admin"
+                self.department = "HR"
+                self.employee = None
+                self.it_account = None
+        return HREmployee()
 
     # Find employee by company_email from IT accounts
     it_account = (

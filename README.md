@@ -1,362 +1,400 @@
 # AI HR Onboarding System
 
-A comprehensive, AI-powered HR onboarding platform that automates the entire employee onboarding process from pre-onboarding to joining day, featuring an intelligent chatbot, document management, training tracking, and comprehensive HR analytics.
+A comprehensive, AI-powered HR onboarding platform that automates the entire employee onboarding process from pre-onboarding to joining day, featuring an intelligent chatbot (SUPA), document management, training tracking, and HR analytics.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Python](https://img.shields.io/badge/python-3.8+-green.svg)
-![React](https://img.shields.io/badge/react-18.3.1-blue.svg)
-![FastAPI](https://img.shields.io/badge/fastapi-0.118.0-teal.svg)
+## Overview
 
-## 🎯 Overview
+The system streamlines employee onboarding through automation, intelligent assistance, and comprehensive tracking:
 
-The AI HR Onboarding System streamlines the employee onboarding process through automation, intelligent assistance, and comprehensive tracking. It includes:
+- **Complete Onboarding Workflow** — Pre-onboarding to joining day
+- **AI Chatbot (SUPA)** — Intelligent assistant for employees and HR
+- **Document Management** — Secure PDF upload and validation
+- **Training Tracking** — Monitor training completion and certifications
+- **HR Dashboard** — Analytics, reporting, and employee management
+- **IT Account Management** — Company email account creation and management
+- **Email Integration** — Gmail SMTP integration for onboarding emails
 
-- **Complete Onboarding Workflow** - From pre-onboarding to joining day
-- **AI Chatbot (SUPA)** - Intelligent assistant for employees and HR
-- **Document Management** - Secure PDF upload and validation
-- **Training Tracking** - Monitor training completion and certifications
-- **HR Dashboard** - Analytics, reporting, and employee management
-- **IT Account Management** - Automated IT account creation and management
-- **Email Integration** - Hostinger email integration for onboarding emails
-
-## ✨ Key Features
-
-### For Employees
-- 📋 **Onboarding Dashboard** - Track progress, tasks, and completion status
-- 🤖 **AI Chatbot (SUPA)** - Get instant answers about policies, procedures, and onboarding
-- 📄 **Document Upload** - Submit Aadhaar, PAN, Bank details, and NDA (PDF only)
-- 🎓 **Training Module** - Complete POSH, IT Access, and Collaboration training
-- 💬 **Feedback System** - Share onboarding experience and suggestions
-- 📊 **Progress Tracking** - Real-time progress indicators and task completion
-
-### For HR
-- 📈 **Analytics Dashboard** - Comprehensive onboarding statistics and insights
-- 👥 **Employee Management** - Track all employees, their status, and onboarding progress
-- 📋 **Employee Details Page** - Comprehensive employee data management with document viewing
-- 📄 **Document Management** - View, download, and print employee documents (PDF files)
-- 🔄 **Employee Status Control** - Enable/disable employee accounts with one-click toggle
-- 📧 **Email Management** - Configure multiple email accounts for sending onboarding emails
-- 💻 **IT Account Management** - Create and manage IT accounts for employees
-- 📤 **Data Export** - Export comprehensive employee data to Excel with all details
-- 🔍 **Advanced Search** - Multi-field search by name, email, company email, mobile, Aadhaar, PAN, department, or role
-- 🎯 **Smart Filtering** - Filter by department and role with automatic normalization
-- 📝 **Department Analytics** - Department-wise onboarding statistics
-
-### Technical Features
-- 🔐 **Secure Authentication** - JWT-based auth with HR department verification
-- 🔒 **Password Security** - Bcrypt hashing and Fernet encryption
-- 📧 **Email Integration** - Hostinger SMTP/IMAP with Sent folder sync
-- 🤖 **AI Integration** - Google Gemini AI + local LLM (Ollama) support
-- 💾 **Database** - MySQL/SQLite support with SQLAlchemy ORM
-- 🎨 **Modern UI** - React with Tailwind CSS and Framer Motion animations
-- 📱 **Responsive Design** - Works seamlessly on desktop, tablet, and mobile
-
-## 🏗️ Architecture
+## Architecture
 
 ```
 AI-HR-Onboarding/
 ├── backend/                 # FastAPI backend
 │   ├── app/
-│   │   ├── main.py         # FastAPI application
-│   │   ├── models.py       # Database models
-│   │   ├── routes/         # API endpoints
-│   │   ├── mcp_tools/      # AI and business logic
-│   │   └── utils/          # Utilities (email, security, etc.)
+│   │   ├── main.py         # FastAPI application & HR login
+│   │   ├── models.py       # SQLAlchemy database models
+│   │   ├── database.py     # Database connection setup
+│   │   ├── dependencies.py # Auth dependencies
+│   │   ├── routes/         # API endpoint handlers
+│   │   ├── mcp_tools/      # AI chatbot logic & business tools
+│   │   └── utils/          # Email, security, token utilities
+│   ├── scripts/            # Utility scripts (seeding, backfill)
 │   ├── requirements.txt    # Python dependencies
 │   └── README.md           # Backend documentation
 │
-├── frontend/                # React frontend
+├── frontend/               # React frontend
 │   ├── src/
+│   │   ├── App.jsx         # Main app with routing
 │   │   ├── pages/          # Page components
-│   │   ├── components/     # Reusable components
-│   │   └── utils/          # Utility functions
+│   │   ├── components/     # Reusable UI components
+│   │   ├── utils/          # API config, task fetchers
+│   │   └── config/         # Training module config
 │   ├── package.json        # Node dependencies
 │   └── README.md           # Frontend documentation
 │
 └── README.md               # This file
 ```
 
-## 🚀 Quick Start
-
-### Prerequisites
-
-- **Backend**: Python 3.8+, MySQL (or SQLite)
-- **Frontend**: Node.js 16+, npm
-- **Additional**: Hostinger email account, Google Gemini API key
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd AI-HR-Onboarding
-   ```
-
-2. **Set up Backend**
-   ```bash
-   cd backend
-   python -m venv venv
-   
-   # Windows
-   venv\Scripts\activate
-   
-   # Linux/Mac
-   source venv/bin/activate
-   
-   pip install -r requirements.txt
-   ```
-   
-   Create `.env` file (or copy from `backend/env.example`):
-   ```env
-   DATABASE_URL=mysql+pymysql://user:password@localhost:3306/ai_hr_db
-   SECRET_KEY=your-secret-key
-   IT_ENCRYPTION_KEY=your-fernet-key  # Run: python generate_key.py
-   GEMINI_API_KEY=your-gemini-key
-   OPENAI_API_KEY=your-openai-key  # Optional
-   ```
-   
-   **Generate keys:**
-   ```bash
-   # Generate all keys at once
-   python generate_all_keys.py
-   
-   # Or generate individually
-   python generate_key.py  # For IT_ENCRYPTION_KEY
-   python -c "import secrets; print(secrets.token_urlsafe(32))"  # For SECRET_KEY
-   ```
-
-3. **Set up Frontend**
-   ```bash
-   cd frontend
-   npm install
-   ```
-   
-   Create `.env` file (or copy from `frontend/env.example`):
-   ```env
-   VITE_API_URL=http://localhost:8000
-   ```
-
-4. **Run the application**
-   
-   **Terminal 1 (Backend):**
-   ```bash
-   cd backend
-   uvicorn app.main:app --reload
-   ```
-   
-   **Terminal 2 (Frontend):**
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-
-5. **Access the application**
-   - Frontend: `http://localhost:5173`
-   - Backend API: `http://localhost:8000`
-   - API Docs: `http://localhost:8000/docs`
-
-## 📖 Documentation
-
-- **[Backend README](backend/README.md)** - Backend setup, API endpoints, and architecture
-- **[Frontend README](frontend/README.md)** - Frontend setup, components, and features
-- **[Postman API Guide](backend/POSTMAN_API_GUIDE.md)** - Complete API reference
-- **[Dependencies Guide](DEPENDENCIES.md)** - Dependency overview and installation
-- **[IT Account Setup](backend/IT_ACCOUNT_SETUP.md)** - IT account management guide
-- **[Email Account Setup](backend/EMAIL_ACCOUNT_SETUP.md)** - Email configuration guide
-- **[Deployment Keys Checklist](DEPLOYMENT_KEYS_CHECKLIST.md)** - 🔑 **Complete guide for replacing personal keys before deployment**
-- **[Keys Replacement Summary](KEYS_REPLACEMENT_SUMMARY.md)** - Quick reference for deployment keys
-- **[Keys Replacement Table](KEYS_REPLACEMENT_TABLE.md)** - Table format of all keys to replace
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
-- **FastAPI** (0.118.0) - Modern Python web framework
-- **SQLAlchemy** (2.0.39) - ORM for database operations
-- **PyMySQL** (1.1.2) - MySQL database driver
-- **python-jose** (3.5.0) - JWT authentication
-- **passlib** (1.7.4) - Password hashing
-- **cryptography** (46.0.2) - Encryption for sensitive data
-- **google-generativeai** (0.8.5) - Gemini AI integration
-- **Pydantic** (2.12.0) - Data validation
+| Package | Version | Purpose |
+|---------|---------|---------|
+| FastAPI | 0.118.0 | Web framework |
+| SQLAlchemy | 2.0.39 | ORM |
+| PyMySQL | 1.1.2 | MySQL driver |
+| python-jose | 3.5.0 | JWT authentication |
+| passlib | 1.7.4 | Password hashing (bcrypt) |
+| google-generativeai | 0.8.5 | Gemini AI chatbot |
+| Pydantic | 2.12.0 | Data validation |
+| python-dotenv | 1.1.1 | Environment config |
 
 ### Frontend
-- **React** (18.3.1) - UI framework
-- **Vite** (5.2.0) - Build tool
-- **React Router** (6.30.1) - Routing
-- **Tailwind CSS** (3.4.18) - Styling
-- **Framer Motion** (11.18.2) - Animations
-- **Axios** (1.7.0) - HTTP client
-- **Recharts** (3.3.0) - Data visualization
+| Package | Version | Purpose |
+|---------|---------|---------|
+| React | 18.3.1 | UI framework |
+| Vite | 5.2.0 | Build tool |
+| React Router | 6.30.1 | Routing |
+| Tailwind CSS | 3.4.18 | Styling |
+| Framer Motion | 11.18.2 | Animations |
+| Axios | 1.7.0 | HTTP client |
+| Recharts | 3.3.0 | Data visualization |
 
-## 🎯 Key Features in Detail
+## Quick Start
 
-### Employee Details Management
-- **Comprehensive Employee View**: View all employee information in a detailed table
-- **Document Access**: View, download, and print employee documents (Aadhaar, PAN, Bank, NDA)
-- **Status Management**: Toggle employee status between active and disabled with one click
-- **Advanced Search**: Search across multiple fields (name, email, company email, mobile, Aadhaar, PAN, department, role)
-- **Smart Filtering**: Filter by department and role with automatic normalization (handles variations like "HR" vs "hr")
-- **Excel Export**: Export comprehensive employee data including personal info, family details, and documents
-- **Sticky Columns**: Emp ID and Name columns remain visible while scrolling horizontally
-- **Real-time Updates**: Employee status changes reflect immediately in the UI
+### Prerequisites
+- Python 3.8+, MySQL (or SQLite for dev)
+- Node.js 16+, npm
+- Google Gemini API key
 
-### AI Chatbot (SUPA)
-- **Multi-model Support**: Uses local LLM (Ollama) with fallback
-- **Context Awareness**: Retrieves relevant policies, employee data, and onboarding context
-- **Intent Detection**: Understands employee vs HR queries
-- **Policy Grounding**: Retrieves relevant company policies
-- **HR Analytics**: Provides insights on onboarding metrics
+### 1. Backend Setup
+```bash
+cd backend
+python -m venv venv
 
-### Document Management
-- **PDF Validation**: Only PDF files accepted
-- **Format Validation**: Aadhaar (12 digits), PAN (XXXXX1234X format)
-- **Automatic Replacement**: Re-uploading replaces existing files
-- **Secure Storage**: Employee-specific folders with UUID naming
-- **Document Viewing**: HR can view employee documents in browser
-- **Document Download**: Download employee documents for offline access
-- **Document Printing**: Print employee documents directly from the system
-- **File Management**: List and manage all employee documents from Employee Details page
+# Windows
+venv\Scripts\activate
+# Linux/Mac
+source venv/bin/activate
 
-### Email Integration
-- **Hostinger SMTP/IMAP**: Professional email sending
-- **Multiple Accounts**: Support for multiple sending accounts
-- **Sent Folder Sync**: Automatically saves sent emails to Sent folder
-- **Default Account**: Configurable default email for sending
+pip install -r requirements.txt
+```
 
-### Security
-- **Password Hashing**: Bcrypt for secure password storage
-- **Encryption**: Fernet encryption for sensitive IT account passwords
-- **JWT Tokens**: Secure token-based authentication
-- **Department Verification**: Only HR department can access HR routes
-- **Input Validation**: Pydantic schemas validate all inputs
-- **Employee Status Control**: Disabled employees cannot access the system
-- **Account Management**: HR can enable/disable employee accounts to control access
+Create `backend/.env`:
+```env
+DATABASE_URL=mysql+pymysql://user:password@localhost:3306/onboarding_db
+SECRET_KEY=your-secret-key
+GEMINI_API_KEY=your-gemini-key
 
-## 📊 API Endpoints Overview
+# Gmail SMTP (for sending onboarding emails)
+GMAIL_SMTP_SERVER=smtp.gmail.com
+GMAIL_SMTP_PORT=587
+```
+
+Generate `SECRET_KEY`:
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Start backend:
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 2. Frontend Setup
+```bash
+cd frontend
+npm install
+```
+
+Create `frontend/.env`:
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+Start frontend:
+```bash
+npm run dev
+```
+
+### 3. Access
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:8000`
+- API Docs (Swagger): `http://localhost:8000/docs`
+
+## Features
+
+### For Employees
+- Onboarding dashboard with progress tracking
+- AI Chatbot (SUPA) for instant answers about policies and procedures
+- PDF document upload (Aadhaar, PAN, Bank details, NDA)
+- Training modules (POSH, IT Access, Collaboration) with certificate upload
+- Joining day checklist
+- Department introduction
+- Feedback submission
+- Final review
+
+### For HR
+- Analytics dashboard with department-wise statistics
+- Employee management with advanced search and filtering
+- Document viewing, downloading, and printing
+- Employee status control (enable/disable)
+- Pre-onboarding form to create new employees and send invitation emails
+- IT account creation and management
+- Email account configuration (multiple accounts, set default)
+- Password reset
+- Excel export of employee data
+
+### Onboarding Flow
+
+```
+HR Creates Employee → Email Sent → Employee Opens Link → Dashboard
+    ↓                                                        ↓
+Pre-Onboarding                              Personal Details & Documents
+                                                         ↓
+                                                   Joining Day Checklist
+                                                         ↓
+                                                   Training Modules
+                                                         ↓
+                                                Department Introduction
+                                                         ↓
+                                                      Feedback
+                                                         ↓
+                                                   Final Review
+                                                         ↓
+                                                HR Reviews & Approves
+```
+
+## API Endpoints
 
 ### Authentication
-- `POST /auth/hr_login_post` - HR login
-- `POST /auth/reset-password` - Password reset
+- `POST /auth/hr_login_post` — HR login (JWT)
+- `POST /auth/reset-password` — Password reset
+- `GET /auth/me` — Current user info
 
 ### Employee Management
-- `GET /employees` - List employees
-- `POST /employees` - Create employee
-- `GET /employees/{id}` - Get employee details
-- `PUT /employees/{id}/status` - Update employee status (enable/disable) - HR only
-- `POST /employees/{id}/personal-info` - Submit personal details
+- `GET /employees` — List employees
+- `POST /employees` — Create employee
+- `GET /employees/{id}` — Get employee details
+- `PUT /employees/{id}/status` — Toggle employee status
+- `POST /employees/{id}/personal-info` — Submit personal details
 
 ### Documents & Training
-- `POST /employees/{id}/documents` - Upload documents
-- `GET /documents/employee/{employee_id}/files` - Get list of employee files - HR only
-- `GET /documents/employee/{employee_id}/file/{filename}` - View/download employee document - HR only
-- `POST /training/{employee_id}` - Submit training certificates
+- `POST /employees/{id}/documents` — Upload documents (PDF)
+- `GET /documents/employee/{id}/files` — List employee files
+- `GET /documents/employee/{id}/file/{filename}` — View/download file
+- `POST /training/{employee_id}` — Submit training certificates
+- `GET /training/{employee_id}` — Get training status
 
-### HR Features
-- `GET /hr/onboarding_status` - Onboarding status
-- `GET /it-accounts` - List IT accounts
-- `POST /email-accounts` - Add email account
+### IT & Email Accounts
+- `POST /it-accounts` — Create IT account
+- `GET /it-accounts` — List all IT accounts
+- `PUT /it-accounts/employee/{id}` — Update IT account
+- `POST /email-accounts` — Add email account
+- `GET /email-accounts` — List email accounts
+- `POST /email-accounts/{id}/set-default` — Set default
+
+### HR & Analytics
+- `GET /hr/onboarding_status` — Onboarding analytics
 
 ### Chatbot
-- `POST /chatbot/chat` - Send message to SUPA
+- `POST /chatbot/chat` — Chat with SUPA
 
-See [Postman API Guide](backend/POSTMAN_API_GUIDE.md) for complete reference.
+## Deployment
 
-## 🔒 Security Best Practices
+### Linux Server Deployment
 
-1. **Environment Variables**: 
-   - Never commit `.env` files (they're in `.gitignore`)
-   - Use example files (`env.example`) as templates
-   - Store production keys securely (use secrets management service)
-2. **Key Management**: 
-   - Generate unique keys for each environment (dev/staging/prod)
-   - Use `python backend/generate_all_keys.py` to generate keys
-   - **CRITICAL**: If `IT_ENCRYPTION_KEY` changes, all encrypted passwords must be re-encrypted
-3. **Deployment Keys**: 
-   - Replace ALL personal keys before deployment (see [DEPLOYMENT_KEYS_CHECKLIST.md](DEPLOYMENT_KEYS_CHECKLIST.md))
-   - Never reuse keys across environments
-   - Rotate keys regularly
-4. **Password Policy**: Enforce strong passwords (min 6 characters)
-5. **HTTPS**: Use HTTPS in production
-6. **Token Expiration**: Implement token refresh mechanism
-7. **Input Validation**: Validate all user inputs
-8. **File Validation**: Restrict file types and sizes
+#### 1. Server Requirements
+- Ubuntu 20.04+, 2GB RAM, 2 CPU cores, 20GB storage
+- Python 3.8+, Node.js 16+, MySQL, Nginx
 
-## 🧪 Testing
+#### 2. Database Setup
+```bash
+sudo mysql -u root -p
+```
+```sql
+CREATE DATABASE onboarding_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'app_user'@'localhost' IDENTIFIED BY 'secure_password';
+GRANT ALL PRIVILEGES ON onboarding_db.* TO 'app_user'@'localhost';
+FLUSH PRIVILEGES;
+```
 
-### Backend Testing
-- Use Swagger UI at `/docs` for interactive testing
-- Import Postman collection from `POSTMAN_API_GUIDE.md`
+#### 3. Backend
+```bash
+cd /var/www/AI-HR-Onboarding/backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+# Create .env with production values
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
 
-### Frontend Testing
-- Test on multiple browsers (Chrome, Firefox, Safari, Edge)
-- Test responsive design on different screen sizes
-- Verify API integration
+Create systemd service `/etc/systemd/system/ai-hr-backend.service`:
+```ini
+[Unit]
+Description=AI HR Onboarding Backend
+After=network.target mysql.service
 
-## 🚢 Deployment
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/AI-HR-Onboarding/backend
+Environment="PATH=/var/www/AI-HR-Onboarding/backend/venv/bin"
+ExecStart=/var/www/AI-HR-Onboarding/backend/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
 
-### ⚠️ Important: Replace Personal Keys Before Deployment
+[Install]
+WantedBy=multi-user.target
+```
 
-**Before deploying, you MUST replace all personal keys with organization keys. See:**
-- **[DEPLOYMENT_KEYS_CHECKLIST.md](DEPLOYMENT_KEYS_CHECKLIST.md)** - Complete deployment guide
-- **[KEYS_REPLACEMENT_SUMMARY.md](KEYS_REPLACEMENT_SUMMARY.md)** - Quick reference
-- **[KEYS_REPLACEMENT_TABLE.md](KEYS_REPLACEMENT_TABLE.md)** - Table format
+```bash
+sudo systemctl enable ai-hr-backend
+sudo systemctl start ai-hr-backend
+```
 
-### Backend Deployment
-1. **Replace all keys** (see deployment keys checklist)
-   - Generate new `SECRET_KEY` and `IT_ENCRYPTION_KEY`
-   - Update `DATABASE_URL` with production database
-   - Replace API keys (`GEMINI_API_KEY`, `OPENAI_API_KEY`)
-2. Set up production database (MySQL recommended)
-3. Configure environment variables in `backend/.env`
-4. Install dependencies: `pip install -r requirements.txt`
-5. Run with production server: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
+#### 4. Frontend
+```bash
+cd /var/www/AI-HR-Onboarding/frontend
+npm install
+# Set VITE_API_URL in .env to production URL (https://...)
+npm run build
+```
 
-### Frontend Deployment
-1. **Update `VITE_API_URL`** in `frontend/.env` to production API URL
-2. Build production bundle: `npm run build`
-3. Deploy `dist/` folder to web server
-4. Configure reverse proxy to backend API
-5. Ensure `VITE_API_URL` points to production backend
+#### 5. Nginx Configuration
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
 
-### Key Generation Scripts
-- **Generate all keys**: `python backend/generate_all_keys.py`
-- **Generate encryption key**: `python backend/generate_key.py`
-- **Generate secret key**: `python -c "import secrets; print(secrets.token_urlsafe(32))"`
+    root /var/www/AI-HR-Onboarding/frontend/dist;
+    index index.html;
 
-## 🤝 Contributing
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+    location /api {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        client_max_body_size 10M;
+    }
 
-## 📝 License
+    location /assets {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
 
-MIT License - see LICENSE file for details
+#### 6. SSL (Let's Encrypt)
+```bash
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com
+```
 
-## 👥 Authors
+### Cloud Platform Deployment
+
+| Platform | Free Tier | Backend URL Format |
+|----------|-----------|-------------------|
+| Render | Yes (512MB, cold starts) | `https://app-name.onrender.com` |
+| Railway | $5/month credit | `https://app-name.up.railway.app` |
+| Fly.io | 3 VMs free | `https://app-name.fly.dev` |
+
+For any platform:
+1. Set environment variables (DATABASE_URL, SECRET_KEY, GEMINI_API_KEY, ALLOWED_ORIGINS)
+2. Build command: `pip install -r backend/requirements.txt`
+3. Start command: `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+
+### GitHub Pages (Frontend Only)
+1. Go to repo Settings → Pages → Source: GitHub Actions
+2. Add `VITE_API_URL` as repository secret
+3. Push to main branch — auto-deploys via GitHub Actions
+4. Ensure backend uses HTTPS (mixed content is blocked by browsers)
+
+### Important: CORS
+Update `ALLOWED_ORIGINS` in backend `.env` or `main.py` to include your frontend domain:
+```python
+allowed_origins = [
+    "http://localhost:5173",
+    "https://your-frontend-domain.com",
+]
+```
+
+### Important: HTTPS
+When frontend is on HTTPS, the backend API **must** also be HTTPS. Update `VITE_API_URL` accordingly.
+
+## Security
+
+- **JWT Authentication** — Token-based auth with HR department verification
+- **Password Hashing** — bcrypt via passlib
+- **Input Validation** — Pydantic schemas on all API inputs
+- **File Validation** — PDF-only uploads, 10MB size limit
+- **Employee Access Control** — Disabled employees can't access the system
+- **CORS** — Configurable allowed origins
+- **Environment Variables** — Sensitive config kept in `.env` (gitignored)
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Backend won't start | Check `.env` values, verify MySQL is running, check port 8000 is free |
+| Database connection error | Verify `DATABASE_URL` format, test MySQL login manually |
+| Frontend blank page | Run `npm run build`, check Nginx config, verify `dist/` exists |
+| CORS errors | Add frontend domain to `allowed_origins` in backend |
+| Mixed content blocked | Ensure both frontend and backend use HTTPS in production |
+| Login fails | Verify IT account exists, employee department is "HR" |
+| Email sending fails | Check email account is configured in HR dashboard |
+| Document upload fails | Ensure file is PDF and under 10MB |
+
+## User Guide
+
+### HR Login
+1. Open the HR login page
+2. Enter company email (IT account email) and password
+3. Only employees with department = "HR" can access
+
+### Pre-Onboarding (Create Employee)
+1. HR Dashboard → Pre-Onboarding
+2. Fill: Employee ID, Name, Email, Department, Role
+3. Submit → Employee record created, folder generated, onboarding email sent
+
+### Employee Onboarding
+1. Employee receives email with unique onboarding link
+2. Opens dashboard → completes tasks in any order:
+   - Personal Details & Document Upload
+   - Joining Day Checklist (email setup, orientation, policy acceptance)
+   - Training Modules (POSH, IT Access, Collaboration + certificate upload)
+   - Department Introduction
+   - Feedback
+3. Final Review (available after all tasks complete) → Onboarding done
+
+### IT Account Management
+1. HR Dashboard → IT Account Management
+2. Create: Select employee, enter company email & password
+3. Password is hashed (bcrypt) for login, plaintext stored for email sharing
+
+### Email Account Management
+1. HR Dashboard → Email Account Setup
+2. Add Gmail accounts with app passwords
+3. Set one as default for sending onboarding emails
+
+## License
+
+MIT License
+
+## Authors
 
 **Sumeru Digitals**
-- Backend Team
-- Frontend Team
-- HR Team
-
-## 🙏 Acknowledgments
-
-- FastAPI team for the excellent framework
-- React team for the powerful UI library
-- Tailwind CSS for the utility-first CSS framework
-- All open-source contributors
-
-## 📞 Support
-
-For issues, questions, or contributions:
-- Check documentation in respective README files
-- Review API documentation in Postman guide
-- Contact development team
-
----
-
-**Built with ❤️ by Sumeru Digitals**
 

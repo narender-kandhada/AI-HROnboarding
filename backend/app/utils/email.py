@@ -8,14 +8,28 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models import EmailAccount
-from app.utils.security import decrypt_password
+
 
 load_dotenv()
 
 # Gmail SMTP Settings
 GMAIL_SMTP_SERVER = os.getenv("GMAIL_SMTP_SERVER", "smtp.gmail.com")
 GMAIL_SMTP_PORT = int(os.getenv("GMAIL_SMTP_PORT", "587"))  # TLS port (587) or SSL (465)
-# Note: Gmail uses email address as username and app password as password
+
+def get_app_password_for_email(email: str) -> str:
+    """Look up the Gmail App Password for a sender email from .env
+    
+    Format in .env: HR_APP_PASSWORD_<email>=<16-char-app-password>
+    Example: HR_APP_PASSWORD_user@gmail.com=abcdefghijklmnop
+    """
+    key = f"HR_APP_PASSWORD_{email}"
+    password = os.getenv(key)
+    if not password:
+        raise ValueError(
+            f"No app password found in .env for '{email}'. "
+            f"Add this line to your .env file: {key}=<your-16-char-gmail-app-password>"
+        )
+    return password.strip()
 
 def get_default_email_account(db: Session = None) -> EmailAccount:
     """Get the default email account from database"""
@@ -108,6 +122,15 @@ def send_email_with_gmail(
             save_to_sent_folder(from_email, app_password, msg)
         
         return True
+    except smtplib.SMTPAuthenticationError as e:
+        # Provide clear operational guidance for common Gmail auth failures.
+        error_msg = (
+            f"Gmail authentication failed for sender '{from_email}'. "
+            "Use a Gmail App Password (16 characters) for that same sender account, "
+            "remove spaces, and ensure 2-Step Verification is enabled."
+        )
+        print(f"❌ {error_msg} SMTP details: {e}")
+        raise ValueError(error_msg)
     except Exception as e:
         print(f"❌ Gmail SMTP error: {e}")
         raise
@@ -136,13 +159,8 @@ def send_onboarding_email(hr_email: str, hr_name: str, to_email: str, employee_n
         if not account:
             raise ValueError("No email account configured. Please add an email account in HR Dashboard.")
         
-        # Decrypt app password (stored as password in database) for email sending
-        try:
-            app_password = decrypt_password(account.password)
-        except Exception as e:
-            error_msg = f"Could not decrypt Gmail app password: {str(e)}"
-            print(f"❌ {error_msg}")
-            raise ValueError(error_msg)
+        # Get app password from .env (not from database)
+        app_password = get_app_password_for_email(account.email)
         
         # Send email using Gmail SMTP
         send_email_with_gmail(
@@ -186,13 +204,8 @@ def send_email_credentials(
         if not account:
             raise ValueError("No email account configured. Please add an email account in HR Dashboard.")
         
-        # Decrypt app password (stored as password in database) for email sending
-        try:
-            app_password = decrypt_password(account.password)
-        except Exception as e:
-            error_msg = f"Could not decrypt Gmail app password: {str(e)}"
-            print(f"❌ {error_msg}")
-            raise ValueError(error_msg)
+        # Get app password from .env (not from database)
+        app_password = get_app_password_for_email(account.email)
         
         # Send email using Gmail SMTP
         send_email_with_gmail(

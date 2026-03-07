@@ -16,7 +16,6 @@ from app.models import Employee, ITAccount
 from app.utils.security import (
     create_access_token,
     verify_password,
-    decrypt_password,
     pwd_context
 )
 from app.chat_api import router as chat_router
@@ -33,7 +32,7 @@ if ALLOWED_ORIGINS_ENV:
     allowed_origins = [o.strip() for o in ALLOWED_ORIGINS_ENV.split(",") if o.strip()]
 else:
     allowed_origins = [
-        "http://localhost:3000",
+        "http://localhost:3001",
         "http://localhost:5173",
         "https://ai-hr-onboarding.vercel.app",
         "http://hronboarding.sumerudigital.com",
@@ -59,8 +58,24 @@ class HRLoginRequest(BaseModel):
 # ------------------------------------------------------------------
 # HR LOGIN (JSON BASED)
 # ------------------------------------------------------------------
+# DEFAULT HR CREDENTIALS (works even with empty database)
+# ------------------------------------------------------------------
+DEFAULT_HR_EMAIL = os.getenv("DEFAULT_HR_EMAIL", "test@user.com")
+DEFAULT_HR_PASSWORD = os.getenv("DEFAULT_HR_PASSWORD", "123456")
+
+# ------------------------------------------------------------------
 @app.post("/auth/hr_login_post")
 async def hr_login_post(payload: HRLoginRequest):
+    # Check default HR credentials first (works without database data)
+    if payload.email == DEFAULT_HR_EMAIL and payload.password == DEFAULT_HR_PASSWORD:
+        token = create_access_token({"sub": DEFAULT_HR_EMAIL, "is_default_hr": True})
+        return {
+            "message": "Login successful",
+            "email": DEFAULT_HR_EMAIL,
+            "name": "HR Admin",
+            "access_token": token,
+        }
+
     db = SessionLocal()
     try:
         it_account = (
@@ -78,11 +93,7 @@ async def hr_login_post(payload: HRLoginRequest):
             raise HTTPException(status_code=403, detail="HR access only")
 
         # Password verification
-        try:
-            valid = verify_password(payload.password, it_account.company_password)
-        except Exception:
-            decrypted = decrypt_password(it_account.company_password)
-            valid = decrypted == payload.password if decrypted else False
+        valid = verify_password(payload.password, it_account.company_password)
 
         if not valid:
             raise HTTPException(status_code=401, detail="Invalid credentials")

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaSearch, FaEdit, FaPlus, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaSearch, FaEdit, FaPlus } from "react-icons/fa";
 import { motion } from "framer-motion";
 import SumeruLogo from "../assets/sumeru-logo.png";
 import { getApiUrl } from "../utils/apiConfig";
@@ -11,10 +11,7 @@ const ITAccountManagement = () => {
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [passwordData, setPasswordData] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [formData, setFormData] = useState({
@@ -89,41 +86,6 @@ const ITAccountManagement = () => {
       );
     }
     setFilteredEmployees(filtered);
-  };
-
-  const handleViewPassword = async (employeeId) => {
-    try {
-      const hrToken = localStorage.getItem("token");
-      if (!hrToken) {
-        alert("Please login as HR first");
-        navigate("/hr-login");
-        return;
-      }
-
-      const res = await fetch(`${apiUrl}/it-accounts/employee/${employeeId}/password`, {
-        headers: { Authorization: `Bearer ${hrToken}` }
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        setPasswordData(data);
-        const employee = employees.find(emp => emp.emp_id === employeeId);
-        setSelectedEmployee(employee);
-        setShowPasswordModal(true);
-      } else {
-        if (res.status === 401) {
-          alert("Session expired. Please login again.");
-          localStorage.removeItem("token");
-          navigate("/hr-login");
-        } else {
-          const error = await res.json();
-          alert(`Failed: ${error.detail || "Unknown error"}`);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching password:", error);
-      alert("Failed to fetch password. Please try again.");
-    }
   };
 
   const handleCreateAccount = (employee) => {
@@ -288,12 +250,6 @@ const ITAccountManagement = () => {
                           {emp.it_account ? (
                             <>
                               <button
-                                onClick={() => handleViewPassword(emp.emp_id)}
-                                className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                              >
-                                <FaEye />
-                              </button>
-                              <button
                                 onClick={() => handleEditAccount(emp)}
                                 className="text-green-600 hover:text-green-800 font-medium text-sm"
                               >
@@ -318,57 +274,6 @@ const ITAccountManagement = () => {
           )}
         </motion.div>
       </div>
-
-      {/* Password Modal */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl"
-          >
-            <h2 className="text-2xl font-bold mb-4">{selectedEmployee?.name}'s Credentials</h2>
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company Email</label>
-                <input
-                  type="text"
-                  value={passwordData?.company_email || ""}
-                  readOnly
-                  className="w-full px-3 py-2 border rounded-lg bg-gray-50"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company Password</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={passwordData?.company_password || ""}
-                    readOnly
-                    className="w-full px-3 py-2 border rounded-lg bg-gray-50 pr-10"
-                  />
-                  <button
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                  </button>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                setShowPasswordModal(false);
-                setShowPassword(false);
-                setPasswordData(null);
-              }}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-            >
-              Close
-            </button>
-          </motion.div>
-        </div>
-      )}
 
       {/* Form Modal */}
       {showFormModal && (

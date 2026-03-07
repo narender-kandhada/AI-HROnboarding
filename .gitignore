@@ -1,2 +1,23 @@
-".env" 
-".env" 
+# Environment
+.env
+
+# Node
+node_modules/
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Uploads
+backend/app/uploads/

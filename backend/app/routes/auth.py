@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.utils.security import verify_password, hash_password, encrypt_password, decrypt_password
+from app.utils.security import verify_password, hash_password
 from app.utils.token import create_access_token
 from app.dependencies import get_current_hr_user
 from pydantic import BaseModel
@@ -70,28 +70,16 @@ def reset_password(
     # Verify old password
     old_password_valid = False
     
-    # Try hash verification first
-    try:
-        old_password_valid = verify_password(reset_data.old_password, it_account.company_password)
-    except Exception:
-        # Try decryption (old encrypted format)
-        try:
-            decrypted_password = decrypt_password(it_account.company_password)
-            if decrypted_password:
-                old_password_valid = (decrypted_password == reset_data.old_password)
-        except Exception:
-            old_password_valid = False
+    old_password_valid = verify_password(reset_data.old_password, it_account.company_password)
     
     if not old_password_valid:
         raise HTTPException(status_code=401, detail="Old password is incorrect")
     
     # Update password (hash it)
     hashed_password = hash_password(reset_data.new_password)
-    encrypted_password = encrypt_password(reset_data.new_password)  # Optional for email sharing
     
     # Update in database
     it_account.company_password = hashed_password
-    it_account.company_password_encrypted = encrypted_password
     it_account.updated_at = datetime.utcnow()
     
     db.commit()

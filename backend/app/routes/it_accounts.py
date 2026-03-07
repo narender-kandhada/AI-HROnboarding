@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import ITAccount, Employee
 from app.dependencies import get_current_hr_user
-from app.utils.security import encrypt_password, decrypt_password, hash_password, verify_password
+from app.utils.security import hash_password
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr
@@ -65,36 +65,6 @@ def get_employee_it_account(
         "updated_at": account.updated_at
     }
 
-@router.get("/employee/{employee_id}/password")
-def get_employee_password(
-    employee_id: str,
-    db: Session = Depends(get_db),
-    hr_user = Depends(get_current_hr_user)
-):
-    """Get password for employee (HR only) - returns encrypted version if available"""
-    # Check if employee is disabled
-    employee = db.query(Employee).filter(Employee.emp_id == employee_id).first()
-    if not employee:
-        raise HTTPException(status_code=404, detail="Employee not found")
-    if employee.status == "disabled":
-        raise HTTPException(status_code=403, detail="Cannot access IT account for disabled employee")
-    
-    account = db.query(ITAccount).filter(ITAccount.employee_id == employee_id).first()
-    if not account:
-        raise HTTPException(status_code=404, detail="IT account not found")
-    
-    # Try to decrypt if encrypted version exists
-    decrypted_password = None
-    if account.company_password_encrypted:
-        decrypted_password = decrypt_password(account.company_password_encrypted)
-    
-    return {
-        "employee_name": employee.name if employee else "Unknown",
-        "company_email": account.company_email,
-        "company_password": decrypted_password,  # Will be None if not encrypted
-        "note": "Password is stored hashed for security. Encrypted version available only if created with encryption."
-    }
-
 @router.post("/")
 def create_it_account(
     account_data: ITAccountCreate,
@@ -115,36 +85,39 @@ def create_it_account(
     # Hash password for login verification (secure, one-way)
     hashed_password = hash_password(account_data.company_password)
     
-    # Optionally encrypt for email sharing (if you need to send password via email)
-    encrypted_password = encrypt_password(account_data.company_password)
-    
-    # Create account
-    new_account = ITAccount(
-        employee_id=account_data.employee_id,
-        company_email=account_data.company_email,
-        company_password=hashed_password,  # Hashed for login
-        company_password_encrypted=encrypted_password  # Encrypted for email sharing (optional)
-    )
-    
-    db.add(new_account)
-    db.commit()
-    db.refresh(new_account)
-    
-    # Send email credentials to employee (use plain password from input, not decrypted)
+    # Send email credentials FIRST - only save to DB if email succeeds
     try:
         from app.utils.email import send_email_credentials
         send_email_credentials(
             to_email=employee.email,
             employee_name=employee.name,
             company_email=account_data.company_email,
-            company_password=account_data.company_password  # Use plain password from input
+            company_password=account_data.company_password
         )
         print(f"✅ Email credentials sent to {employee.email}")
     except Exception as e:
-        print(f"⚠️ Failed to send email credentials: {e}")
-        # Don't fail the request if email fails
+        print(f"❌ Failed to send email credentials: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to send credentials email: {str(e)}. Account was NOT created."
+        )
     
-    return {"message": "IT account created successfully", "account_id": new_account.id}
+    # Email sent successfully - now save to database
+    new_account = ITAccount(
+        employee_id=account_data.employee_id,
+        company_email=account_data.company_email,
+        company_password=hashed_password,
+    )
+    
+    db.add(new_account)
+    db.commit()
+    db.refresh(new_account)
+    
+    return {
+        "message": "IT account created successfully",
+        "account_id": new_account.id,
+        "email_sent": True,
+    }
 
 @router.put("/employee/{employee_id}")
 def update_it_account(
@@ -182,8 +155,6 @@ def update_it_account(
             raise HTTPException(status_code=422, detail="Password cannot be empty")
         # Hash password for login verification
         account.company_password = hash_password(account_data.company_password)
-        # Optionally encrypt for later retrieval/email
-        account.company_password_encrypted = encrypt_password(account_data.company_password)
     
     account.updated_at = datetime.utcnow()
     

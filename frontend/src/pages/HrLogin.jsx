@@ -10,17 +10,14 @@ export default function HrLogin() {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    const formData = new FormData();
-    formData.append("email", email);
-    formData.append("password", password);
-
     try {
       const apiUrl = getApiEndpoint("/auth/hr_login_post");
       console.log("🔐 HR Login - API URL:", apiUrl); // Debug log
       
       const response = await fetch(apiUrl, {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) throw new Error("❌ Invalid HR credentials");

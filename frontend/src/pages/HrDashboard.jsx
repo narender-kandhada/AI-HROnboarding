@@ -24,7 +24,6 @@ const HrDashboard = () => {
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailFormData, setEmailFormData] = useState({
     email: "",
-    password: "",
     display_name: "",
     notes: ""
   });
@@ -273,7 +272,7 @@ const HrDashboard = () => {
 
   // Logout handler
   const handleAddEmailAccount = () => {
-    setEmailFormData({ email: "", password: "", display_name: "", notes: "" });
+    setEmailFormData({ email: "", display_name: "", notes: "" });
     setShowEmailModal(true);
   };
 
@@ -317,7 +316,6 @@ const HrDashboard = () => {
 
       const payload = {
         email: emailFormData.email,
-        password: emailFormData.password,
         display_name: emailFormData.display_name || null,
         notes: emailFormData.notes || null,
         is_default: emailAccounts.length === 0 ? "yes" : "no"  // First account becomes default
@@ -335,7 +333,7 @@ const HrDashboard = () => {
       if (res.ok) {
         alert("Email account added successfully!");
         setShowEmailModal(false);
-        setEmailFormData({ email: "", password: "", display_name: "", notes: "" });
+        setEmailFormData({ email: "", display_name: "", notes: "" });
         fetchEmailAccounts();
       } else {
         const error = await res.json();
@@ -986,21 +984,9 @@ const HrDashboard = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="hr@company.com"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Password *
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={emailFormData.password}
-                    onChange={(e) => setEmailFormData({ ...emailFormData, password: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Email account password"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Password will be encrypted and stored securely</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Make sure the Gmail App Password for this email is configured in the server .env file
+                  </p>
                 </div>
 
                 <div>
